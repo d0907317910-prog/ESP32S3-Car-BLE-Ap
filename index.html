@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101522">
+<title>ESP32-S3 控制中心</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #101522;
+  color: white;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+}
+
+h1 {
+  font-size: 25px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #9ba8bd;
+  margin-bottom: 25px;
+}
+
+.status {
+  background: #1b2435;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.status span {
+  color: #ffb84d;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.connect {
+  width: 100%;
+  background: #477bff;
+  color: white;
+  margin-top: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.relay {
+  background: #1b2435;
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.relay h2 {
+  font-size: 17px;
+}
+
+.relay p {
+  color: #9ba8bd;
+  font-size: 13px;
+}
+
+.switch {
+  width: 100%;
+  color: white;
+  background: #39445a;
+}
+
+.switch.on {
+  background: #16a878;
+}
+
+.note {
+  margin-top: 22px;
+  color: #9ba8bd;
+  font-size: 12px;
+  line-height: 1.7;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>ESP32-S3 控制中心</h1>
+<div class="subtitle">四路藍牙繼電器控制</div>
+
+<div class="status">
+  藍牙狀態：<span id="status">尚未連線</span>
+  <button class="connect" id="connect">連接 ESP32-S3</button>
+</div>
+
+<div class="grid" id="relays"></div>
+
+<div class="note">
+  請先連接 ESP32-S3，再使用開關。<br>
+  目前尚未連線時，開關只會顯示介面狀態。
+</div>
+
+</div>
+
+<script>
+const SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0";
+const CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1";
+
+let device = null;
+let characteristic = null;
+let connected = false;
+const states = [false, false, false, false];
+
+const statusElement = document.getElementById("status");
+const connectButton = document.getElementById("connect");
+const relaysElement = document.getElementById("relays");
+
+function renderRelays() {
+  relaysElement.innerHTML = "";
+
+  states.forEach((on, index) => {
+    const card = document.createElement("div");
+    card.className = "relay";
+
+    const title = document.createElement("h2");
+    title.textContent = `繼電器 ${index + 1}`;
+
+    const description = document.createElement("p");
+    description.textContent = on ? "目前開啟" : "目前關閉";
+
+    const button = document.createElement("button");
+    button.className = "switch" + (on ? " on" : "");
+    button.textContent = on ? "開啟中" : "已關閉";
+
+    button.addEventListener("click", async () => {
+      if (!connected || !characteristic) {
+        alert("請先連接 ESP32-S3！");
+        return;
+      }
+
+      const nextState = !states[index];
+      const command = `R${index + 1}:${nextState ? 1 : 0}`;
+
+      try {
+        await characteristic.writeValue(
+          new TextEncoder().encode(command)
+        );
+
+        states[index] = nextState;
+        renderRelays();
+      } catch (error) {
+        alert("指令傳送失敗，請檢查藍牙連線。");
+      }
+    });
+
+    card.append(title, description, button);
+    relaysElement.appendChild(card);
+  });
+}
+
+connectButton.addEventListener("click", async () => {
+  if (!navigator.bluetooth) {
+    alert("目前瀏覽器不支援 Web Bluetooth，請使用 Android 版 Chrome。");
+    return;
+  }
+
+  try {
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [SERVICE_UUID] }]
+    });
+
+    device.addEventListener("gattserverdisconnected", () => {
+      connected = false;
+      characteristic = null;
+      statusElement.textContent = "已斷線";
+      connectButton.textContent = "重新連線";
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+
+    characteristic = await service.getCharacteristic(
+      CHARACTERISTIC_UUID
+    );
+
+    connected = true;
+    statusElement.textContent = "已連線";
+    connectButton.textContent = "已連接 " + device.name;
+  } catch (error) {
+    statusElement.textContent = "連線失敗";
+    alert("連線失敗：" + error.message);
+  }
+});
+
+renderRelays();
+</script>
+</body>
+</html>

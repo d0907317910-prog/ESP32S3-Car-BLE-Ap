@@ -184,9 +184,10 @@ connectButton.addEventListener("click", async () => {
   }
 
   try {
-    device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [SERVICE_UUID] }]
-    });
+   device = await navigator.bluetooth.requestDevice({
+  acceptAllDevices: true,
+  optionalServices: [SERVICE_UUID]
+});
 
     device.addEventListener("gattserverdisconnected", () => {
       connected = false;

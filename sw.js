@@ -1,7 +1,7 @@
-```javascript
+
 "use strict";
 
-const CACHE_NAME = "car-control-v1";
+const CACHE_NAME = "car-control-v2";
 
 const APP_FILES = [
   "./",
@@ -32,44 +32,37 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") {
-    return;
-  }
+  if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
 
-  if (url.origin !== self.location.origin) {
-    return;
-  }
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        if (response && response.ok) {
-          const copy = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(event.request, copy));
-        }
-
-        return response;
-      })
-      .catch(async () => {
-        const cached = await caches.match(event.request);
-
+    caches.match(event.request)
+      .then(cached => {
         if (cached) {
           return cached;
         }
 
-        if (event.request.mode === "navigate") {
-          const page = await caches.match("./index.html");
+        return fetch(event.request).then(response => {
+          if (response && response.ok) {
+            const copy = response.clone();
 
-          if (page) {
-            return page;
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(event.request, copy))
+              .catch(() => {});
           }
+
+          return response;
+        });
+      })
+      .catch(() => {
+        if (event.request.mode === "navigate") {
+          return caches.match("./index.html");
         }
 
-        return new Response("目前離線，且找不到快取檔案。", {
+        return new Response("目前離線，找不到快取檔案。", {
           status: 503,
           headers: {
             "Content-Type": "text/plain; charset=utf-8"
@@ -78,4 +71,3 @@ self.addEventListener("fetch", event => {
       })
   );
 });
-```

@@ -1,53 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080d18">
-<meta name="description" content="ESP32-S3 四路藍牙繼電器控制中心">
+<title>CAR CONTROL - ESP32-S3</title>
 <link rel="manifest" href="./manifest.json">
-<title>CAR CONTROL | ESP32-S3</title>
 <style>
-:root{color-scheme:dark;--bg:#080d18;--card:#121b2b;--blue:#4b8cff;--green:#18d69a;--red:#ff5d70;--text:#f3f7ff;--muted:#8d9bb2}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px 16px 32px;font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;background:radial-gradient(ellipse at top,#182c4c 0%,transparent 48%),var(--bg);color:var(--text)}
-button{font:inherit;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.container{max-width:520px;margin:auto}header{padding:8px 2px 24px}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#438cff,#1c56d9);font-size:25px}h1{margin:0;font-size:22px;letter-spacing:1px}.subtitle{margin-top:5px;font-size:12px;color:var(--muted);letter-spacing:1.5px}
-.panel{background:rgba(18,27,43,.92);border:1px solid #ffffff14;border-radius:22px;padding:20px;margin-bottom:16px}.section-label{margin:0 0 15px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:1.8px}.status-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.status-title{font-size:15px;font-weight:700}.status-subtitle{color:var(--muted);font-size:12px;margin-top:5px;overflow-wrap:anywhere}.badge{display:inline-flex;align-items:center;gap:7px;border-radius:30px;padding:8px 11px;background:#ffb84d18;color:#ffbf69;font-size:12px;white-space:nowrap}.badge.online{color:var(--green);background:#18d69a18}.dot{width:7px;height:7px;background:currentColor;border-radius:50%}
-.primary,.install{width:100%;border:0;border-radius:14px;padding:15px;margin-top:18px;color:white;background:linear-gradient(135deg,#438cff,#285de2);font-weight:750}.install{margin-top:10px;background:#263750}.hidden{display:none!important}.master{background:linear-gradient(145deg,#172944,#111a2a)}.heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.heading h2{font-size:17px;margin:0}.heading span{color:var(--muted);font-size:12px}.master-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.master-btn{border:0;border-radius:14px;padding:15px 8px;font-weight:800;color:white}.on{background:linear-gradient(135deg,#13bb85,#078a65)}.off{background:linear-gradient(135deg,#ff6578,#d83d56)}
-.grid-heading{margin:26px 2px 14px;display:flex;justify-content:space-between;align-items:center}.grid-heading h2{margin:0;font-size:17px}.grid-heading span{color:var(--muted);font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.relay{background:linear-gradient(145deg,#182438,#101827);border:1px solid #ffffff14;border-radius:20px;padding:17px;min-width:0}.relay.is-on{border-color:#18d69a70;background:linear-gradient(145deg,#16352f,#101e25)}.relay-top{display:flex;align-items:center;justify-content:space-between}.num{color:var(--muted);font-size:11px;letter-spacing:1.5px}.indicator{width:10px;height:10px;border-radius:50%;background:#596579}.relay.is-on .indicator{background:var(--green);box-shadow:0 0 14px #18d69a90}.relay h3{font-size:17px;margin:16px 0 6px}.state{color:var(--muted);font-size:12px;margin-bottom:16px}.relay.is-on .state{color:var(--green)}.switch{width:100%;border:1px solid #344157;border-radius:11px;background:#263247;color:#e5ebf5;padding:12px 5px;font-size:13px;font-weight:750}.relay.is-on .switch{border-color:#18d69a60;background:#18d69a17;color:var(--green)}.footer{text-align:center;color:#63718a;font-size:11px;line-height:1.8;padding:22px 8px 0}.toast{position:fixed;left:16px;right:16px;bottom:20px;max-width:480px;margin:auto;padding:14px 16px;border:1px solid #ffffff14;border-radius:14px;background:#202d42;color:white;box-shadow:0 10px 35px #0006;font-size:13px;text-align:center;z-index:10}@media(max-width:360px){body{padding-left:12px;padding-right:12px}.panel{padding:16px}.relay{padding:13px}h1{font-size:19px}}
+:root{color-scheme:dark;--bg:#080d18;--panel:#111a2b;--line:#263650;--blue:#55a8ff;--green:#41d6a0;--red:#ff6b7c;--text:#f3f6ff;--muted:#9baac2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#14233c 0,var(--bg) 55%);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:var(--text);min-height:100vh}
+main{max-width:620px;margin:auto;padding:24px 16px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:800}.title{font-size:28px;font-weight:900;margin:4px 0}.sub{color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);border-radius:99px;padding:8px 10px;font-size:12px;color:var(--muted);white-space:nowrap}
+button,input{font:inherit}button{cursor:pointer;border:0;border-radius:13px;padding:12px 14px;font-weight:800;color:var(--text);background:#263954}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--blue);color:#061120}.connect{width:100%;margin:22px 0 12px;background:linear-gradient(120deg,#55a8ff,#8b8aff);color:#061120;font-size:15px}.status{display:flex;gap:10px;align-items:center;background:#101a2a;border:1px solid var(--line);padding:12px 14px;border-radius:14px;font-size:13px;color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;background:#78869c;flex:none}.dot.on{background:var(--green);box-shadow:0 0 12px #41d6a080}.section{display:flex;justify-content:space-between;align-items:end;margin:26px 2px 12px}.section h2{font-size:17px;margin:0}.section span{font-size:12px;color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:linear-gradient(145deg,#131e31,#0e1727);border:1px solid var(--line);border-radius:20px;padding:16px;min-width:0}.cardhead{display:flex;justify-content:space-between;gap:8px;align-items:center}.num{font-size:11px;color:var(--blue);font-weight:900;letter-spacing:1px}.edit{background:#202e44;padding:7px 9px;border-radius:9px;font-size:12px}.name{font-size:18px;font-weight:850;margin:15px 0 4px;overflow-wrap:anywhere}.state{font-size:12px;color:var(--muted);margin-bottom:18px}.toggle{width:100%;padding:12px 8px;background:#202e44}.toggle.active{background:var(--green);color:#061b15}.bottom{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.6}.actions{display:flex;gap:8px;margin-top:16px}.actions button{flex:1;font-size:12px}.secondary{background:#18263a;border:1px solid var(--line)}.hint{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6}.toast{margin-top:10px;color:var(--green);font-size:12px;min-height:18px}
+@media(max-width:360px){.grid{grid-template-columns:1fr}.title{font-size:24px}}
 </style>
 </head>
-<body>
-<main class="container">
-<header><div class="brand"><div class="logo">⚡</div><div><h1>CAR CONTROL</h1><div class="subtitle">ESP32-S3 SMART SYSTEM</div></div></div></header>
-<section class="panel">
-<div class="section-label">DEVICE CONNECTION</div>
-<div class="status-row"><div><div class="status-title">ESP32-S3 藍牙裝置</div><div class="status-subtitle" id="deviceName">尚未連接裝置</div></div><div class="badge" id="badge"><span class="dot"></span><span id="status">未連線</span></div></div>
-<button class="primary" id="connect">連接 ESP32-S3</button>
-<button class="install hidden" id="install">＋ 安裝到手機主畫面</button>
-</section>
-<section class="panel master"><div class="heading"><h2>全車控制</h2><span id="masterState">等待連線</span></div><div class="master-buttons"><button class="master-btn on" id="allOn" disabled>⚡ 全部開啟</button><button class="master-btn off" id="allOff" disabled>◯ 全部關閉</button></div></section>
-<div class="grid-heading"><h2>裝置控制</h2><span id="count">0 / 4 開啟</span></div><section class="grid" id="grid"></section>
-<footer class="footer">SMART VEHICLE CONTROL SYSTEM<br>ESP32-S3 · BLE · FOUR-CHANNEL RELAY</footer>
-</main><div id="toast" class="toast hidden" role="status"></div>
+<body><main>
+<header class="top"><div><div class="eyebrow">BLE CONTROL SYSTEM</div><div class="title">CAR CONTROL</div><div class="sub">ESP32-S3 · 四路藍牙控制中心</div></div><div class="pill">PWA READY</div></header>
+<button id="connectBtn" class="connect">連線 ESP32-S3</button>
+<div class="status"><span id="dot" class="dot"></span><span id="statusText">尚未連線，請先連接藍牙裝置</span></div>
+<div class="section"><h2>控制面板</h2><span>點擊名稱旁的 ✎ 可自訂</span></div>
+<div id="relayGrid" class="grid"></div>
+<div class="actions"><button id="installBtn" class="secondary" hidden>安裝到手機</button><button id="resetNames" class="secondary">重設名稱</button><button id="disconnectBtn" class="secondary" disabled>中斷連線</button></div>
+<div id="toast" class="toast"></div>
+<div class="bottom">名稱會自動儲存在這台手機的瀏覽器中。自訂名稱只影響畫面，不會改變 ESP32-S3 的繼電器編號或藍牙指令。</div>
+<div class="hint">藍牙連線請使用支援 Web Bluetooth 的 Chrome。請先在低電壓、無負載環境測試；車輛電路接線請由合格成人或技術人員確認。</div>
+</main>
 <script>
-"use strict";
-const SERVICE_UUID="12345678-1234-5678-1234-56789abcdef0";
-const CHARACTERISTIC_UUID="12345678-1234-5678-1234-56789abcdef1";
-const states=[false,false,false,false];let device=null,characteristic=null,connected=false,busy=false,installPrompt=null,toastTimer=null;
-const enc=new TextEncoder(),$=id=>document.getElementById(id);
-function toast(s){$("toast").textContent=s;$("toast").classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.add("hidden"),2800)}
-function render(){ $("status").textContent=connected?"已連線":"未連線";$("badge").classList.toggle("online",connected);$("deviceName").textContent=connected&&device?(device.name||"ESP32-S3"):"尚未連接裝置";$("connect").textContent=connected?"中斷連線":"連接 ESP32-S3";$("allOn").disabled=!connected||busy;$("allOff").disabled=!connected||busy;$("masterState").textContent=!connected?"等待連線":busy?"正在傳送指令":"控制已就緒";$("grid").innerHTML="";
-states.forEach((on,i)=>{let card=document.createElement("article");card.className="relay"+(on?" is-on":"");card.innerHTML=`<div class="relay-top"><span class="num">CHANNEL 0${i+1}</span><span class="indicator"></span></div><h3>繼電器 ${i+1}</h3><div class="state">${on?"● 已開啟":"○ 已關閉"}</div><button class="switch" ${!connected||busy?"disabled":""}>${on?"關閉此路":"開啟此路"}</button>`;card.querySelector("button").onclick=()=>setRelay(i,!states[i]);$("grid").appendChild(card)});$("count").textContent=`${states.filter(Boolean).length} / 4 開啟`}
-async function writeCommand(command){if(!connected||!characteristic||!device?.gatt?.connected)throw Error("藍牙尚未連線");let d=enc.encode(command);if(characteristic.writeValueWithResponse)await characteristic.writeValueWithResponse(d);else if(characteristic.writeValueWithoutResponse)await characteristic.writeValueWithoutResponse(d);else if(characteristic.writeValue)await characteristic.writeValue(d);else throw Error("此藍牙特徵值不支援寫入")}
-async function setRelay(i,on){if(!connected||busy)return toast("請先連線並等待上一個指令完成");busy=true;render();try{await writeCommand(`R${i+1}:${on?1:0}`);states[i]=on;toast(`繼電器 ${i+1} 指令已傳送`)}catch(e){toast("傳送失敗："+e.message)}finally{busy=false;render()}}
-async function setAll(on){if(!connected||busy)return toast("請先連接 ESP32-S3");busy=true;render();let done=0;try{for(let i=0;i<4;i++){await writeCommand(`R${i+1}:${on?1:0}`);states[i]=on;done++;render();if(i<3)await new Promise(r=>setTimeout(r,100))}toast(on?"四路開啟指令已全部傳送":"四路關閉指令已全部傳送")}catch(e){toast(`已傳送 ${done}/4 路；其餘失敗：${e.message}`)}finally{busy=false;render()}}
-function disconnect(){connected=false;characteristic=null;states.fill(false);render();toast("藍牙已斷線")}
-async function connect(){if(!navigator.bluetooth)return toast("此瀏覽器不支援 Web Bluetooth，請使用支援 BLE 的 Chrome");if(connected&&device?.gatt?.connected){device.gatt.disconnect();disconnect();return} $("connect").disabled=true;try{device=await navigator.bluetooth.requestDevice({filters:[{services:[SERVICE_UUID]}]});device.addEventListener("gattserverdisconnected",disconnect);let server=await device.gatt.connect(),service=await server.getPrimaryService(SERVICE_UUID);characteristic=await service.getCharacteristic(CHARACTERISTIC_UUID);connected=true;render();toast("ESP32-S3 連線成功")}catch(e){connected=false;characteristic=null;render();toast("連線失敗："+e.message)}finally{$("connect").disabled=false}}
-$("connect").onclick=connect;$("allOn").onclick=()=>setAll(true);$("allOff").onclick=()=>setAll(false);
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("install").classList.remove("hidden")});
-$("install").onclick=async()=>{if(!installPrompt)return toast("請使用 Chrome 選單中的安裝或加到主畫面");installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("install").classList.add("hidden")};
-window.addEventListener("appinstalled",()=>{$("install").classList.add("hidden");toast("App 已安裝")});
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(e=>console.error("Service Worker 註冊失敗：",e)));
+const SERVICE_UUID='12345678-1234-5678-1234-56789abcdef0';
+const CHARACTERISTIC_UUID='12345678-1234-5678-1234-56789abcdef1';
+const DEFAULT_NAMES=['繼電器 1','繼電器 2','繼電器 3','繼電器 4'];
+const KEY='car-control-relay-names-v1';
+let names=loadNames(), states=[false,false,false,false], device=null, characteristic=null, installPrompt=null;
+const $=id=>document.getElementById(id);
+function loadNames(){try{const n=JSON.parse(localStorage.getItem(KEY));return DEFAULT_NAMES.map((d,i)=>typeof n?.[i]==='string'&&n[i].trim()?n[i].trim():d)}catch{return [...DEFAULT_NAMES]}}
+function saveNames(){localStorage.setItem(KEY,JSON.stringify(names))}
+function render(){ $('relayGrid').innerHTML=names.map((name,i)=>`<article class="card"><div class="cardhead"><span class="num">CHANNEL 0${i+1}</span><button class="edit" data-edit="${i}" aria-label="編輯${escapeHtml(name)}名稱">✎ 編輯</button></div><div class="name">${escapeHtml(name)}</div><div class="state" id="state${i}">${states[i]?'目前狀態：開啟':'目前狀態：關閉'}</div><button class="toggle ${states[i]?'active':''}" data-toggle="${i}">${states[i]?'關閉':'開啟'}</button></article>`).join('')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){$('toast').textContent=s;setTimeout(()=>{if($('toast').textContent===s)$('toast').textContent=''},3000)}
+$('relayGrid').addEventListener('click',async e=>{const edit=e.target.closest('[data-edit]');if(edit){const i=+edit.dataset.edit;const answer=prompt(`請輸入「繼電器 ${i+1}」的新名稱：`,names[i]);if(answer===null)return;const n=answer.trim();if(!n){toast('名稱不可空白');return}names[i]=n.slice(0,32);saveNames();render();toast(`已儲存：${names[i]}`);return}const btn=e.target.closest('[data-toggle]');if(btn)await setRelay(+btn.dataset.toggle,!states[+btn.dataset.toggle])});
+async function setRelay(i,on){if(!characteristic){toast('請先連線 ESP32-S3');return}try{const cmd=`R${i+1}:${on?1:0}`;await characteristic.writeValue(new TextEncoder().encode(cmd));states[i]=on;render();toast(`${names[i]}：${on?'已開啟':'已關閉'}`)}catch(err){toast('傳送失敗，請確認藍牙連線');console.error(err)}}
+$('connectBtn').addEventListener('click',async()=>{if(!navigator.bluetooth){toast('此瀏覽器不支援 Web Bluetooth，請使用 Android Chrome');return}try{device=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'ESP'}],optionalServices:[SERVICE_UUID]});device.addEventListener('gattserverdisconnected',disconnected);const server=await device.gatt.connect();const service=await server.getPrimaryService(SERVICE_UUID);characteristic=await service.getCharacteristic(CHARACTERISTIC_UUID);$('dot').classList.add('on');$('statusText').textContent=`已連線：${device.name||'ESP32-S3'}`;$('connectBtn').textContent='已連線';$('disconnectBtn').disabled=false;toast('藍牙連線成功')}catch(e){toast('連線未完成：請確認裝置已開機並靠近手機');console.error(e)}});
+function disconnected(){characteristic=null;$('dot').classList.remove('on');$('statusText').textContent='連線已中斷';$('connectBtn').textContent='重新連線 ESP32-S3';$('disconnectBtn').disabled=true}
+$('disconnectBtn').addEventListener('click',()=>{if(device?.gatt?.connected)device.gatt.disconnect();else disconnected()});
+$('resetNames').addEventListener('click',()=>{if(confirm('確定要把四個名稱恢復成預設值嗎？')){names=[...DEFAULT_NAMES];saveNames();render();toast('名稱已重設')}});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('installBtn').hidden=false});
+$('installBtn').addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('installBtn').hidden=true});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
 render();
-</script>
-</body></html>
+</script></body></html>

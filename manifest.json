@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Ec電驅",
   "short_name": "Ec電驅",
   "start_url": "./",
@@ -6,5 +7,19 @@
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#101827",
-  "description": "Ec電驅 ESP32-S3 BLE 四路繼電器控制"
+  "description": "Ec電驅 ESP32-S3 BLE 四路繼電器控制",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

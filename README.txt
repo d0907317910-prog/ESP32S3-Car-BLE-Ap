@@ -7,3 +7,5 @@ BLE Characteristic UUID: 12345678-1234-5678-1234-56789abcdef1
 指令格式：R1:1 / R1:0 至 R4:1 / R4:0。ESP32-S3 程式維持相同 UUID 和指令即可。
 部署：解壓縮後，把全部檔案上傳到 GitHub Pages 儲存庫根目錄，覆蓋舊檔並 Commit。更新後用 Android Chrome 重新開啟網站；如仍顯示舊版，關閉網頁後重新開啟或清除網站快取。
 自訂名稱與群組儲存在目前手機瀏覽器，不會自動同步到其他裝置。先在無負載環境測試；車輛電路請由合格技術人員確認。
+
+PWA 安裝資訊：manifest.json 已包含 192x192 與 512x512 PNG 圖示、名稱、start_url、scope、display。上傳後請等待 GitHub Pages 部署完成，再用 Chrome 重新開啟。

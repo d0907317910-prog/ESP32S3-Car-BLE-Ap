@@ -1,50 +1,37 @@
 <!doctype html>
-<html lang="zh-TW">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080d18">
-<title>CAR CONTROL - ESP32-S3</title>
-<link rel="manifest" href="./manifest.json">
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101827"><link rel="manifest" href="./manifest.json"><title>Ec電驅</title>
 <style>
-:root{color-scheme:dark;--bg:#080d18;--panel:#111a2b;--line:#263650;--blue:#55a8ff;--green:#41d6a0;--red:#ff6b7c;--text:#f3f6ff;--muted:#9baac2}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#14233c 0,var(--bg) 55%);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:var(--text);min-height:100vh}
-main{max-width:620px;margin:auto;padding:24px 16px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:800}.title{font-size:28px;font-weight:900;margin:4px 0}.sub{color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);border-radius:99px;padding:8px 10px;font-size:12px;color:var(--muted);white-space:nowrap}
-button,input{font:inherit}button{cursor:pointer;border:0;border-radius:13px;padding:12px 14px;font-weight:800;color:var(--text);background:#263954}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--blue);color:#061120}.connect{width:100%;margin:22px 0 12px;background:linear-gradient(120deg,#55a8ff,#8b8aff);color:#061120;font-size:15px}.status{display:flex;gap:10px;align-items:center;background:#101a2a;border:1px solid var(--line);padding:12px 14px;border-radius:14px;font-size:13px;color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;background:#78869c;flex:none}.dot.on{background:var(--green);box-shadow:0 0 12px #41d6a080}.section{display:flex;justify-content:space-between;align-items:end;margin:26px 2px 12px}.section h2{font-size:17px;margin:0}.section span{font-size:12px;color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:linear-gradient(145deg,#131e31,#0e1727);border:1px solid var(--line);border-radius:20px;padding:16px;min-width:0}.cardhead{display:flex;justify-content:space-between;gap:8px;align-items:center}.num{font-size:11px;color:var(--blue);font-weight:900;letter-spacing:1px}.edit{background:#202e44;padding:7px 9px;border-radius:9px;font-size:12px}.name{font-size:18px;font-weight:850;margin:15px 0 4px;overflow-wrap:anywhere}.state{font-size:12px;color:var(--muted);margin-bottom:18px}.toggle{width:100%;padding:12px 8px;background:#202e44}.toggle.active{background:var(--green);color:#061b15}.bottom{margin-top:18px;color:var(--muted);font-size:12px;line-height:1.6}.actions{display:flex;gap:8px;margin-top:16px}.actions button{flex:1;font-size:12px}.secondary{background:#18263a;border:1px solid var(--line)}.hint{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6}.toast{margin-top:10px;color:var(--green);font-size:12px;min-height:18px}
-@media(max-width:360px){.grid{grid-template-columns:1fr}.title{font-size:24px}}
-</style>
-</head>
-<body><main>
-<header class="top"><div><div class="eyebrow">BLE CONTROL SYSTEM</div><div class="title">CAR CONTROL</div><div class="sub">ESP32-S3 · 四路藍牙控制中心</div></div><div class="pill">PWA READY</div></header>
-<button id="connectBtn" class="connect">連線 ESP32-S3</button>
-<div class="status"><span id="dot" class="dot"></span><span id="statusText">尚未連線，請先連接藍牙裝置</span></div>
-<div class="section"><h2>控制面板</h2><span>點擊名稱旁的 ✎ 可自訂</span></div>
-<div id="relayGrid" class="grid"></div>
-<div class="actions"><button id="installBtn" class="secondary" hidden>安裝到手機</button><button id="resetNames" class="secondary">重設名稱</button><button id="disconnectBtn" class="secondary" disabled>中斷連線</button></div>
-<div id="toast" class="toast"></div>
-<div class="bottom">名稱會自動儲存在這台手機的瀏覽器中。自訂名稱只影響畫面，不會改變 ESP32-S3 的繼電器編號或藍牙指令。</div>
-<div class="hint">藍牙連線請使用支援 Web Bluetooth 的 Chrome。請先在低電壓、無負載環境測試；車輛電路接線請由合格成人或技術人員確認。</div>
-</main>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f31;--line:#26364d;--text:#edf4ff;--muted:#a9b8cc;--green:#2bd576;--red:#ff5d6c;--blue:#5da9ff}*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b1220,#111d30);color:var(--text);font-family:system-ui,sans-serif;padding:20px 14px 34px}main{max-width:560px;margin:auto}header{text-align:center;padding:12px 0 20px}h1{margin:0;font-size:27px;letter-spacing:2px}.sub,.status,.note,small,footer{color:var(--muted)}.sub{font-size:13px;margin-top:6px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}.row{display:flex;gap:10px;flex-wrap:wrap}button{border:0;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:700;cursor:pointer;min-height:44px;color:#07111d;background:#d9e6f7}button:disabled{opacity:.45}.primary{background:var(--blue);flex:1}.onall{background:var(--green);flex:1}.offall{background:var(--red);flex:1}.smallbtn{padding:9px 11px;min-height:38px;font-size:13px}.status{font-size:13px;margin-top:10px;word-break:break-word}h2{font-size:17px;margin:0 0 12px}.relay{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.relay:last-child{border:0}.pill{font-size:12px;border-radius:999px;padding:5px 9px;background:#25344a;color:var(--muted)}.pill.active{background:#16452f;color:#7bf0ae}.field{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0c1524;color:var(--text);font:inherit}.checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.checkitem{display:flex;align-items:center;gap:9px;background:#0d1727;border:1px solid var(--line);border-radius:11px;padding:12px}.checkitem input{width:20px;height:20px;accent-color:var(--green)}.note{font-size:12px;line-height:1.6}.group{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0d1727;margin-top:10px}.grouphead,.groupactions{display:flex;justify-content:space-between;gap:8px;align-items:center}.groupmembers{font-size:12px;color:var(--muted);margin:8px 0}.groupactions button{flex:1}footer{text-align:center;font-size:11px;padding:10px}
+</style></head><body><main><header><h1>Ec電驅</h1><div class="sub">ESP32-S3 · BLE 四路控制</div></header>
+<section class="card"><div class="row"><button id="connect" class="primary">連線藍牙</button><button id="disconnect" class="smallbtn" disabled>中斷連線</button></div><div id="status" class="status">尚未連線</div></section>
+<section class="card"><h2>快速控制</h2><div class="row"><button id="allOn" class="onall" disabled>一鍵全開</button><button id="allOff" class="offall" disabled>一鍵全關</button></div><p class="note">全開／全關會依序傳送四路指令。</p></section>
+<section class="card"><h2>各路繼電器</h2><div id="relays"></div></section>
+<section class="card"><h2>自訂同時控制組合</h2><label class="note" for="groupName">組合名稱</label><input id="groupName" class="field" maxlength="24" placeholder="例如：夜間模式" style="margin:6px 0 12px"><div id="checks" class="checkgrid"></div><div class="row" style="margin-top:12px"><button id="saveGroup" class="primary">儲存組合</button><button id="clearChecks" class="smallbtn">清除勾選</button></div><p class="note">勾選要一起控制的繼電器並儲存。每組可獨立選擇「開啟所選」或「關閉所選」。組合只保存在目前手機的瀏覽器。</p><div id="groups"></div></section>
+<section class="card"><h2>修改繼電器名稱</h2><div id="nameEditors"></div><div class="row"><button id="saveNames" class="primary">儲存名稱</button><button id="resetNames" class="smallbtn">恢復預設名稱</button></div></section><footer>請先在無負載環境測試。</footer></main>
 <script>
-const SERVICE_UUID='12345678-1234-5678-1234-56789abcdef0';
-const CHARACTERISTIC_UUID='12345678-1234-5678-1234-56789abcdef1';
-const DEFAULT_NAMES=['繼電器 1','繼電器 2','繼電器 3','繼電器 4'];
-const KEY='car-control-relay-names-v1';
-let names=loadNames(), states=[false,false,false,false], device=null, characteristic=null, installPrompt=null;
-const $=id=>document.getElementById(id);
-function loadNames(){try{const n=JSON.parse(localStorage.getItem(KEY));return DEFAULT_NAMES.map((d,i)=>typeof n?.[i]==='string'&&n[i].trim()?n[i].trim():d)}catch{return [...DEFAULT_NAMES]}}
-function saveNames(){localStorage.setItem(KEY,JSON.stringify(names))}
-function render(){ $('relayGrid').innerHTML=names.map((name,i)=>`<article class="card"><div class="cardhead"><span class="num">CHANNEL 0${i+1}</span><button class="edit" data-edit="${i}" aria-label="編輯${escapeHtml(name)}名稱">✎ 編輯</button></div><div class="name">${escapeHtml(name)}</div><div class="state" id="state${i}">${states[i]?'目前狀態：開啟':'目前狀態：關閉'}</div><button class="toggle ${states[i]?'active':''}" data-toggle="${i}">${states[i]?'關閉':'開啟'}</button></article>`).join('')}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function toast(s){$('toast').textContent=s;setTimeout(()=>{if($('toast').textContent===s)$('toast').textContent=''},3000)}
-$('relayGrid').addEventListener('click',async e=>{const edit=e.target.closest('[data-edit]');if(edit){const i=+edit.dataset.edit;const answer=prompt(`請輸入「繼電器 ${i+1}」的新名稱：`,names[i]);if(answer===null)return;const n=answer.trim();if(!n){toast('名稱不可空白');return}names[i]=n.slice(0,32);saveNames();render();toast(`已儲存：${names[i]}`);return}const btn=e.target.closest('[data-toggle]');if(btn)await setRelay(+btn.dataset.toggle,!states[+btn.dataset.toggle])});
-async function setRelay(i,on){if(!characteristic){toast('請先連線 ESP32-S3');return}try{const cmd=`R${i+1}:${on?1:0}`;await characteristic.writeValue(new TextEncoder().encode(cmd));states[i]=on;render();toast(`${names[i]}：${on?'已開啟':'已關閉'}`)}catch(err){toast('傳送失敗，請確認藍牙連線');console.error(err)}}
-$('connectBtn').addEventListener('click',async()=>{if(!navigator.bluetooth){toast('此瀏覽器不支援 Web Bluetooth，請使用 Android Chrome');return}try{device=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'ESP'}],optionalServices:[SERVICE_UUID]});device.addEventListener('gattserverdisconnected',disconnected);const server=await device.gatt.connect();const service=await server.getPrimaryService(SERVICE_UUID);characteristic=await service.getCharacteristic(CHARACTERISTIC_UUID);$('dot').classList.add('on');$('statusText').textContent=`已連線：${device.name||'ESP32-S3'}`;$('connectBtn').textContent='已連線';$('disconnectBtn').disabled=false;toast('藍牙連線成功')}catch(e){toast('連線未完成：請確認裝置已開機並靠近手機');console.error(e)}});
-function disconnected(){characteristic=null;$('dot').classList.remove('on');$('statusText').textContent='連線已中斷';$('connectBtn').textContent='重新連線 ESP32-S3';$('disconnectBtn').disabled=true}
-$('disconnectBtn').addEventListener('click',()=>{if(device?.gatt?.connected)device.gatt.disconnect();else disconnected()});
-$('resetNames').addEventListener('click',()=>{if(confirm('確定要把四個名稱恢復成預設值嗎？')){names=[...DEFAULT_NAMES];saveNames();render();toast('名稱已重設')}});
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('installBtn').hidden=false});
-$('installBtn').addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('installBtn').hidden=true});
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
-render();
+const SU='12345678-1234-5678-1234-56789abcdef0', CU='12345678-1234-5678-1234-56789abcdef1';
+const DEF=['繼電器 1','繼電器 2','繼電器 3','繼電器 4'], NK='car-control-relay-names-v1', GK='car-control-groups-v1';
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+let names=load(NK,DEF.slice()),groups=load(GK,[]),device=null,server=null,char=null,states=[false,false,false,false];
+const $=x=>document.getElementById(x);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function status(s){$('status').textContent=s}
+function connected(v){$('connect').disabled=v;$('disconnect').disabled=!v;$('allOn').disabled=!v;$('allOff').disabled=!v;renderRelays();renderGroups()}
+function renderRelays(){$('relays').innerHTML=names.map((n,i)=>`<div class="relay"><div><b>${esc(n)}</b><br><small>R${i+1}</small></div><span class="pill ${states[i]?'active':''}">${states[i]?'已開啟':'已關閉'}</span><button class="smallbtn" data-r="${i}" ${!char?'disabled':''}>${states[i]?'關閉':'開啟'}</button></div>`).join('');document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>send(+b.dataset.r,!states[+b.dataset.r]))}
+function renderChecks(){$('checks').innerHTML=names.map((n,i)=>`<label class="checkitem"><input type="checkbox" value="${i}"><span>${esc(n)}</span></label>`).join('')}
+function renderNames(){$('nameEditors').innerHTML=names.map((n,i)=>`<label class="note" for="n${i}">R${i+1}</label><input class="field nameField" id="n${i}" maxlength="24" value="${esc(n)}" style="margin:5px 0 10px">`).join('')}
+function renderGroups(){$('groups').innerHTML=groups.length?groups.map((g,i)=>`<div class="group"><div class="grouphead"><b>${esc(g.name)}</b><button class="smallbtn" data-del="${i}">刪除</button></div><div class="groupmembers">包含：${g.relays.map(n=>esc(names[n])).join('、')}</div><div class="groupactions"><button class="onall" data-gon="${i}" ${!char?'disabled':''}>開啟所選</button><button class="offall" data-goff="${i}" ${!char?'disabled':''}>關閉所選</button></div></div>`).join(''):'<p class="note">尚未儲存組合。</p>';document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{groups.splice(+b.dataset.del,1);localStorage.setItem(GK,JSON.stringify(groups));renderGroups()});document.querySelectorAll('[data-gon]').forEach(b=>b.onclick=()=>runGroup(groups[+b.dataset.gon],true));document.querySelectorAll('[data-goff]').forEach(b=>b.onclick=()=>runGroup(groups[+b.dataset.goff],false))}
+async function connect(){if(!navigator.bluetooth){status('瀏覽器不支援 Web Bluetooth，請用 Android Chrome 與 HTTPS 網站。');return}try{status('正在搜尋 ESP32-S3…');device=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'ESP'}],optionalServices:[SU]});device.addEventListener('gattserverdisconnected',()=>{char=null;server=null;connected(false);status('藍牙已中斷，請重新連線。')});server=await device.gatt.connect();let service=await server.getPrimaryService(SU);char=await service.getCharacteristic(CU);status('已連線：'+device.name);connected(true)}catch(e){char=null;connected(false);status('連線失敗：'+e.message)}}
+async function disconnect(){try{if(device?.gatt?.connected)device.gatt.disconnect()}catch(e){}char=null;server=null;connected(false);status('已中斷連線')}
+async function send(i,on){if(!char){status('尚未連線，請先連線藍牙。');return}try{let bytes=new TextEncoder().encode(`R${i+1}:${on?1:0}`);if(char.writeValueWithResponse)await char.writeValueWithResponse(bytes);else await char.writeValue(bytes);states[i]=on;renderRelays();renderGroups();status(`已送出 R${i+1}:${on?1:0}`)}catch(e){status('指令傳送失敗：'+e.message)}}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function all(on){for(let i=0;i<4;i++){await send(i,on);await wait(120)}}
+async function runGroup(g,on){if(!g||!g.relays.length){status('此組合沒有選擇繼電器。');return}for(const i of g.relays){await send(i,on);await wait(120)}}
+$('connect').onclick=connect;$('disconnect').onclick=disconnect;$('allOn').onclick=()=>all(true);$('allOff').onclick=()=>all(false);
+$('clearChecks').onclick=()=>document.querySelectorAll('#checks input').forEach(c=>c.checked=false);
+$('saveGroup').onclick=()=>{let relays=[...document.querySelectorAll('#checks input:checked')].map(c=>+c.value),name=$('groupName').value.trim();if(!name)return alert('請輸入組合名稱。');if(!relays.length)return alert('請至少勾選一個繼電器。');groups.push({name,relays});localStorage.setItem(GK,JSON.stringify(groups));$('groupName').value='';document.querySelectorAll('#checks input').forEach(c=>c.checked=false);renderGroups()};
+$('saveNames').onclick=()=>{names=[...document.querySelectorAll('.nameField')].map((f,i)=>f.value.trim()||`繼電器 ${i+1}`);localStorage.setItem(NK,JSON.stringify(names));renderRelays();renderChecks();renderNames();renderGroups();status('名稱已儲存。')};
+$('resetNames').onclick=()=>{names=DEF.slice();localStorage.setItem(NK,JSON.stringify(names));renderRelays();renderChecks();renderNames();renderGroups()};
+renderRelays();renderChecks();renderNames();renderGroups();
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script></body></html>

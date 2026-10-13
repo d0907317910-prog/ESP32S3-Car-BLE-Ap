@@ -14,7 +14,7 @@
 </div>
 <div id="settingsPage" class="tabpage" hidden>
 <section class="card"><h2>藍牙名稱與連線設定</h2><label class="note" for="deviceAlias">手機介面顯示名稱（本機備註）</label><input id="deviceAlias" class="field" maxlength="32" placeholder="例如：我的電驅控制器" style="margin:6px 0 10px"><label class="note" for="serviceUuid">BLE Service UUID</label><input id="serviceUuid" class="field" autocomplete="off" spellcheck="false" style="margin:6px 0 10px"><label class="note" for="characteristicUuid">BLE Characteristic UUID</label><input id="characteristicUuid" class="field" autocomplete="off" spellcheck="false" style="margin:6px 0 10px"><div class="row"><button id="saveBleSettings" class="smallbtn">儲存藍牙設定</button><button id="resetBleSettings" class="smallbtn">恢復預設 UUID</button></div><p class="note">這裡的藍牙名稱是手機介面顯示的備註，不會直接修改裝置真正廣播的名稱。要修改 ESP32-S3 真正的藍牙名稱，需在 Arduino 程式修改裝置名稱後重新燒錄。</p></section>
-<section class="card"><h2>修改繼電器名稱</h2><div id="nameEditors"></div><div class="row"><button id="saveNames" class="primary">儲存名稱</button><button id="resetNames" class="smallbtn">恢復預設名稱</button></div></section>
+<section class="card"><h2>修改名稱</h2><div id="nameEditors"></div><div class="row"><button id="saveNames" class="primary">儲存名稱</button><button id="resetNames" class="smallbtn">恢復預設名稱</button></div></section>
 </div><footer>請先在無負載環境測試。</footer></main>
 <script>
 const DEFAULT_SU='12345678-1234-5678-1234-56789abcdef0', DEFAULT_CU='12345678-1234-5678-1234-56789abcdef1', BLE_KEY='ec-drive-ble-settings-v1';

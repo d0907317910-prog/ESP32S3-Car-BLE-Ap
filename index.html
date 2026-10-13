@@ -3,785 +3,523 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101827">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <title>Ec電驅</title>
 <style>
-:root {
-  color-scheme: dark;
-  --bg:#0b1220;
-  --panel:#141f31;
-  --line:#293951;
-  --text:#edf4ff;
-  --muted:#a9b8cc;
-  --blue:#5da9ff;
-  --green:#2bd576;
-  --red:#ff5d6c;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  padding:16px 12px 35px;
-  background:linear-gradient(160deg,#0b1220,#142238);
-  color:var(--text);
-  font-family:Arial,"Noto Sans TC",sans-serif;
-}
-main { max-width:560px; margin:auto; }
-header { text-align:center; padding:12px 0 20px; }
-h1 { margin:0; font-size:30px; letter-spacing:3px; }
-h2 { font-size:17px; margin:0 0 14px; }
-.muted,.note,small { color:var(--muted); }
-.muted { font-size:13px; margin-top:6px; }
-.card {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:17px;
-  padding:16px;
-  margin:12px 0;
-}
-button {
-  border:0;
-  border-radius:11px;
-  min-height:43px;
-  padding:11px 13px;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  background:#dce8f7;
-  color:#101827;
-}
-button:disabled { opacity:.4; cursor:not-allowed; }
-.primary { background:var(--blue); flex:1; }
-.green { background:var(--green); flex:1; }
-.red { background:var(--red); flex:1; }
-.secondary { background:#263750; color:var(--text); }
-.row { display:flex; gap:8px; flex-wrap:wrap; }
-.status {
-  margin-top:10px;
-  font-size:13px;
-  color:var(--muted);
-  overflow-wrap:anywhere;
-  line-height:1.6;
-}
-.note { font-size:12px; line-height:1.7; }
-.tabs {
-  position:sticky;
-  top:0;
-  z-index:5;
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:5px;
-  padding:7px;
-  background:var(--bg);
-  border:1px solid var(--line);
-  border-radius:14px;
-  margin-bottom:12px;
-}
-.tab {
-  background:#202d42;
-  color:var(--text);
-  padding:10px 2px;
-  font-size:12px;
-}
-.tab.active { background:var(--blue); color:#07111d; }
-.page[hidden] { display:none; }
-.field {
-  display:block;
-  width:100%;
-  margin:6px 0 12px;
-  padding:12px;
-  background:#0c1524;
-  color:var(--text);
-  border:1px solid var(--line);
-  border-radius:10px;
-  font-size:14px;
-}
-.relay {
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto auto;
-  align-items:center;
-  gap:8px;
-  padding:12px 0;
-  border-bottom:1px solid var(--line);
-}
-.relay:last-child { border-bottom:0; }
-.pill {
-  display:inline-block;
-  padding:5px 9px;
-  border-radius:20px;
-  background:#27364b;
-  color:var(--muted);
-  font-size:11px;
-  white-space:nowrap;
-}
-.pill.on { background:#16452f; color:#7bf0ae; }
-.small { min-height:36px; padding:8px 10px; font-size:12px; }
-.checkgrid,.metrics {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-}
-.checkitem {
-  display:flex;
-  gap:8px;
-  align-items:center;
-  padding:11px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#0d1727;
-  font-size:13px;
-}
-.checkitem input { width:18px; height:18px; accent-color:var(--green); }
-.group {
-  background:#0d1727;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px;
-  margin-top:10px;
-}
-.grouphead,.groupactions {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-}
-.groupactions { margin-top:10px; }
-.groupactions button { flex:1; }
-.metric {
-  min-width:0;
-  background:#0d1727;
-  border:1px solid var(--line);
-  border-radius:13px;
-  padding:13px;
-}
-.metric-label { color:var(--muted); font-size:12px; }
-.metric-value {
-  font-size:23px;
-  font-weight:750;
-  margin-top:9px;
-  overflow-wrap:anywhere;
-}
-.metric-sub { color:var(--muted); font-size:11px; margin-top:6px; }
-.progress {
-  height:7px;
-  background:#293951;
-  border-radius:10px;
-  overflow:hidden;
-  margin-top:10px;
-}
-.progress div {
-  width:0;
-  height:100%;
-  background:var(--green);
-}
-.warning {
-  border:1px solid #66552a;
-  background:#2b2517;
-  color:#ffe29a;
-  padding:11px;
-  border-radius:11px;
-  font-size:12px;
-  line-height:1.7;
-  margin-top:12px;
-}
-footer { text-align:center; font-size:11px; color:var(--muted); padding:15px 0; }
-@media(max-width:370px) {
-  .tab { font-size:10px; }
-  .metric-value { font-size:20px; }
-}
+:root{--bg:#f5f7fa;--card:#fff;--ink:#17202b;--muted:#6c7785;--line:#e3e8ef;--blue:#1769e0;--green:#168653;--red:#c83c46}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:auto;padding:18px 13px 45px}
+header{display:flex;justify-content:space-between;align-items:center;margin:5px 2px 18px;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:43px;height:43px;border-radius:13px;background:#17202b;color:white;display:grid;place-items:center;font-weight:900}
+h1{font-size:21px;margin:0}
+h2{font-size:16px;margin:0}
+.muted{font-size:12px;color:var(--muted);line-height:1.6}
+.pill{font-size:12px;border-radius:30px;padding:7px 10px;background:#edf0f4;color:#657080;white-space:nowrap}
+.pill.ok{background:#e5f7ee;color:var(--green)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#e9edf2;padding:5px;border-radius:14px;margin-bottom:15px}
+.tab{border:0;background:transparent;border-radius:10px;padding:11px 2px;font-size:12px;color:#667080}
+.tab.active{background:white;color:#17202b;font-weight:800;box-shadow:0 2px 8px #0000000c}
+.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:13px;box-shadow:0 4px 18px #17202b08}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--line);border-radius:11px;background:white;padding:11px 12px;font-weight:700;color:var(--ink);flex:1}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:white}
+.btn.danger{color:var(--red)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.device{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:13px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.relay{padding:12px;border:1px solid var(--line);border-radius:13px;min-width:0}
+.relaytop{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.relayname{font-size:13px;font-weight:800;overflow-wrap:anywhere}
+.state{font-size:11px;color:var(--muted);margin-top:7px}
+.switch{width:45px;height:27px;flex-shrink:0;border:0;border-radius:20px;background:#d9dfe7;padding:3px}
+.switch:after{content:"";display:block;width:21px;height:21px;background:white;border-radius:50%;transition:.15s}
+.switch.on{background:var(--blue)}
+.switch.on:after{transform:translateX(18px)}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.metric{padding:13px;background:#f7f9fc;border:1px solid var(--line);border-radius:13px}
+.label{font-size:12px;color:var(--muted)}
+.value{font-size:25px;font-weight:850;margin-top:7px;overflow-wrap:anywhere}
+.unit{font-size:12px;font-weight:500;color:var(--muted)}
+.bar{height:7px;background:#e4e9f0;border-radius:9px;overflow:hidden;margin-top:9px}
+.bar div{height:100%;width:0;background:var(--blue)}
+.notice,.info{padding:11px;border-radius:11px;font-size:12px;line-height:1.6;margin-top:12px}
+.notice{background:#fff5df;color:#775500}
+.info{background:#eef5ff;color:#234c87}
+.field{margin-bottom:13px}
+label{display:block;font-size:12px;font-weight:700;color:#5d6877;margin-bottom:6px}
+input,textarea{width:100%;padding:11px;border:1px solid #dce2e9;border-radius:10px;background:white;color:var(--ink)}
+textarea{resize:vertical}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;background:#111827;color:#dbeafe;border-radius:11px;padding:11px;font-size:11px;line-height:1.5}
+.combo{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:9px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:7px;font-size:13px}
+.check input{width:17px;height:17px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.footer{text-align:center;font-size:11px;color:#8a94a1;margin-top:20px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
 <body>
-<main>
+<div class="app">
 <header>
-  <h1>Ec電驅</h1>
-  <div class="muted">智慧電控 · BLE · ANT BMS</div>
+  <div class="brand"><div class="logo">EC</div><div><h1>Ec電驅</h1><div class="muted">車輛控制 · 電池監控</div></div></div>
+  <span class="pill" id="connection">未連線</span>
 </header>
 
 <nav class="tabs">
-  <button class="tab active" data-page="controlPage">電源控制</button>
-  <button class="tab" data-page="groupsPage">控制組合</button>
-  <button class="tab" data-page="batteryPage">電池監控</button>
-  <button class="tab" data-page="settingsPage">設定</button>
+  <button class="tab active" data-page="control">車輛控制</button>
+  <button class="tab" data-page="battery">電池監控</button>
+  <button class="tab" data-page="groups">控制組合</button>
+  <button class="tab" data-page="settings">設定除錯</button>
 </nav>
 
-<section id="controlPage" class="page">
+<section class="page active" id="control">
   <div class="card">
-    <h2>藍牙連線</h2>
-    <div class="row">
-      <button id="connectBtn" class="primary">搜尋藍牙裝置</button>
-      <button id="disconnectBtn" class="secondary" disabled>中斷</button>
+    <div class="head"><h2>藍牙連線</h2><span class="muted" id="linkStatus">等待連線</span></div>
+    <div class="device">
+      <strong id="deviceLabel">尚未選擇裝置</strong>
+      <div class="muted" id="deviceSub">預設名稱：ESP32-S3-Car</div>
     </div>
-    <div id="connectionStatus" class="status">尚未連線</div>
-    <p class="note">請使用支援 Web Bluetooth 的瀏覽器，並透過 HTTPS 網址開啟網站。</p>
-  </div>
-
-  <div class="card">
-    <h2>快速控制</h2>
-    <div class="row">
-      <button id="allOnBtn" class="green" disabled>全部開啟</button>
-      <button id="allOffBtn" class="red" disabled>全部關閉</button>
+    <div class="btnrow">
+      <button class="btn primary" id="connectBtn">搜尋並連線</button>
+      <button class="btn" id="disconnectBtn" disabled>中斷連線</button>
     </div>
+    <p class="muted">使用支援 Web Bluetooth 的 Android Chrome，並以 HTTPS 網址開啟。選擇 ESP32-S3-Car 後即可連線。</p>
   </div>
-
   <div class="card">
-    <h2>四路繼電器</h2>
-    <div id="relayList"></div>
-  </div>
-</section>
-
-<section id="groupsPage" class="page" hidden>
-  <div class="card">
-    <h2>新增控制組合</h2>
-    <label for="groupName" class="note">組合名稱</label>
-    <input id="groupName" class="field" maxlength="24" placeholder="例如：夜間模式">
-    <div id="groupChecks" class="checkgrid"></div>
-    <div class="row" style="margin-top:12px">
-      <button id="saveGroupBtn" class="primary">儲存組合</button>
-      <button id="clearChecksBtn" class="secondary">清除勾選</button>
+    <div class="head"><h2>四路繼電器</h2><span class="muted" id="relayStatus">尚未連線</span></div>
+    <div class="btnrow" style="margin:0 0 13px">
+      <button class="btn primary" id="allOn" disabled>全部開啟</button>
+      <button class="btn" id="allOff" disabled>全部關閉</button>
     </div>
-    <div class="note" style="margin-top:10px">儲存後可以一次開啟或關閉所選繼電器。</div>
-    <div id="groupList"></div>
+    <div class="grid" id="relayGrid"></div>
+    <div class="notice">請先在低壓環境測試繼電器。不可將高壓電池直接接到 ESP32 GPIO 或供電腳位。</div>
   </div>
 </section>
 
-<section id="batteryPage" class="page" hidden>
+<section class="page" id="battery">
   <div class="card">
-    <h2>ANT BMS 電池監控</h2>
-    <span id="bmsPill" class="pill">等待資料</span>
-    <div id="bmsStatus" class="status">等待 ESP32 傳送 BMS 資料。</div>
-
-    <div class="metrics" style="margin-top:14px">
-      <div class="metric">
-        <div class="metric-label">電池總電壓</div>
-        <div id="voltageValue" class="metric-value">-- V</div>
-        <div class="metric-sub">待確認倍率</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">SOC 剩餘電量</div>
-        <div id="socValue" class="metric-value">-- %</div>
-        <div class="progress"><div id="socProgress"></div></div>
-        <div class="metric-sub">待確認倍率</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">電流原始值</div>
-        <div id="currentValue" class="metric-value">--</div>
-        <div class="metric-sub">倍率尚未驗證</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">最後更新</div>
-        <div id="updateTime" class="metric-value" style="font-size:18px">尚無</div>
-        <div class="metric-sub">以本機時間顯示</div>
-      </div>
+    <div class="head"><h2>ANT BMS 電池狀態</h2><span class="pill" id="bmsStatus">等待資料</span></div>
+    <div class="metrics">
+      <div class="metric"><div class="label">總電壓</div><div class="value" id="voltage">--<span class="unit"> V</span></div></div>
+      <div class="metric"><div class="label">SOC 電量</div><div class="value" id="soc">--<span class="unit"> %</span></div><div class="bar"><div id="socBar"></div></div></div>
+      <div class="metric"><div class="label">電流</div><div class="value" id="current">--<span class="unit"> A</span></div></div>
     </div>
-
-    <div class="warning">
-      電池資料必須由 ESP32 韌體實際傳送才能顯示。電壓及 SOC 的欄位倍率尚未完全驗證，不能用此頁作為高壓電池的安全保護依據。
-    </div>
+    <div class="info" id="batteryInfo">尚未收到電池資料。</div>
+    <div class="muted" style="margin-top:10px">最後更新：<span id="batteryTime">尚無</span></div>
   </div>
-
   <div class="card">
-    <h2>通訊狀態</h2>
-    <div id="notifyStatus" class="status">尚未收到 BMS 通知。</div>
-    <div class="row" style="margin-top:10px">
-      <button id="readBtn" class="secondary" disabled>讀取目前資料</button>
-      <button id="clearBmsBtn" class="secondary">清除畫面</button>
-    </div>
-    <p class="note">此網站接收的是 ESP32 傳來的 JSON 資料，不會直接掃描 ANT BMS。ESP32 韌體需要負責連接 BMS，再將資料通知手機。</p>
+    <h2>收到的電池 JSON</h2>
+    <pre id="jsonLog">尚無資料</pre>
+    <h2 style="margin-top:15px">BLE 通知 Payload HEX</h2>
+    <pre id="hexLog">尚無資料</pre>
+    <div class="notice">此處 HEX 是手機收到的 ESP32 通知內容，不一定是原始 186-byte BMS 封包。未驗證欄位不會顯示為實際電壓、SOC 或安培數。</div>
   </div>
 </section>
 
-<section id="settingsPage" class="page" hidden>
+<section class="page" id="groups">
   <div class="card">
-    <h2>藍牙設定</h2>
-    <label class="note" for="deviceAlias">裝置顯示備註</label>
-    <input id="deviceAlias" class="field" maxlength="32" placeholder="我的電驅控制器">
-
-    <label class="note" for="serviceUuid">Service UUID</label>
-    <input id="serviceUuid" class="field" spellcheck="false">
-
-    <label class="note" for="characteristicUuid">Characteristic UUID</label>
-    <input id="characteristicUuid" class="field" spellcheck="false">
-
-    <div class="row">
-      <button id="saveBleBtn" class="primary">儲存設定</button>
-      <button id="resetUuidBtn" class="secondary">恢復預設</button>
-    </div>
-    <p class="note">顯示備註不會修改 ESP32 真正的廣播名稱。</p>
-  </div>
-
-  <div class="card">
-    <h2>繼電器名稱</h2>
-    <div id="nameEditors"></div>
-    <div class="row">
-      <button id="saveNamesBtn" class="primary">儲存名稱</button>
-      <button id="resetNamesBtn" class="secondary">恢復預設名稱</button>
-    </div>
+    <div class="head"><h2>繼電器控制組合</h2></div>
+    <div class="field"><label for="comboName">組合名稱</label><input id="comboName" maxlength="40" placeholder="例如：夜間燈光"></div>
+    <div class="checks" id="comboChecks"></div>
+    <button class="btn primary" id="saveCombo" style="width:100%;margin-top:14px">儲存組合</button>
+    <hr>
+    <div id="comboList"></div>
+    <p class="muted">組合儲存在目前瀏覽器。套用組合需要先連線 ESP32。</p>
   </div>
 </section>
 
-<footer>Ec電驅 · 請先在安全、無負載環境測試</footer>
-</main>
+<section class="page" id="settings">
+  <div class="card">
+    <h2 style="margin-bottom:15px">BLE 設定</h2>
+    <div class="field"><label for="deviceName">預期裝置名稱（顯示用）</label><input id="deviceName"></div>
+    <div class="field"><label for="serviceUuid">Service UUID</label><input id="serviceUuid"></div>
+    <div class="field"><label for="relayUuid">繼電器 UUID</label><input id="relayUuid"></div>
+    <div class="field"><label for="batteryUuid">電池 Notify UUID</label><input id="batteryUuid"></div>
+    <div class="field"><label for="relayNames">四路繼電器名稱（每行一個）</label><textarea id="relayNames" rows="4"></textarea></div>
+    <div class="btnrow">
+      <button class="btn primary" id="saveSettings">儲存設定</button>
+      <button class="btn" id="resetSettings">還原預設</button>
+    </div>
+    <div class="notice">修改網頁 UUID 不會自動改動 ESP32 韌體。若修改 UUID，兩邊必須一致；修改裝置名稱也需要另外修改 ESP32 程式。</div>
+  </div>
+  <div class="card">
+    <div class="head"><h2>BMS HEX 除錯</h2></div>
+    <p class="muted">原始 BMS HEX 目前會顯示在 ESP32 Arduino IDE 的序列監控視窗。若要直接顯示完整 186 bytes，需要修改韌體，將原始封包分段傳送給網頁。</p>
+    <div class="btnrow">
+      <button class="btn" id="copyJson">複製 JSON</button>
+      <button class="btn danger" id="clearLogs">清除畫面</button>
+    </div>
+    <h2 style="margin-top:15px">事件紀錄</h2>
+    <pre id="eventLog">Ec電驅已載入。</pre>
+  </div>
+</section>
+<div class="footer">Ec電驅 · BLE Vehicle Control</div>
+</div>
 
 <script>
-'use strict';
+(() => {
+"use strict";
 
-const DEFAULT_SERVICE = '12345678-1234-5678-1234-56789abcdef0';
-const DEFAULT_CHAR = '12345678-1234-5678-1234-56789abcdef1';
-const DEFAULT_NAMES = ['繼電器 1','繼電器 2','繼電器 3','繼電器 4'];
+const DEFAULTS = {
+  deviceName: "ESP32-S3-Car",
+  serviceUuid: "12345678-1234-5678-1234-56789abcdef0",
+  relayUuid: "12345678-1234-5678-1234-56789abcdef1",
+  batteryUuid: "12345678-1234-5678-1234-56789abcdef2",
+  relayNames: ["繼電器 1","繼電器 2","繼電器 3","繼電器 4"]
+};
 
-const KEY_NAMES = 'ecdrive_names_v1';
-const KEY_GROUPS = 'ecdrive_groups_v1';
-const KEY_BLE = 'ecdrive_ble_v1';
-
-function loadJSON(key, fallback) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return value ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-let relayNames = loadJSON(KEY_NAMES, DEFAULT_NAMES.slice());
-let groups = loadJSON(KEY_GROUPS, []);
-let bleConfig = loadJSON(KEY_BLE, {
-  serviceUuid: DEFAULT_SERVICE,
-  characteristicUuid: DEFAULT_CHAR,
-  deviceAlias: ''
-});
-
+let settings = JSON.parse(JSON.stringify(DEFAULTS));
 let device = null;
-let gattServer = null;
-let controlChar = null;
+let server = null;
+let relayChar = null;
+let batteryChar = null;
+let connected = false;
 let relayStates = [false,false,false,false];
-let batchBusy = false;
+let combos = [];
+let lastJson = "";
+let lastHex = "";
 
 const $ = id => document.getElementById(id);
 
-function escapeHTML(value) {
+function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-  })[ch]);
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
 }
 
-function setStatus(message) {
-  $('connectionStatus').textContent = message;
+function log(message) {
+  const time = new Date().toLocaleTimeString();
+  $("eventLog").textContent =
+    `[${time}] ${message}\n` + $("eventLog").textContent;
+  $("eventLog").textContent = $("eventLog").textContent.slice(0,7000);
 }
 
-function setConnected(connected) {
-  $('connectBtn').disabled = connected;
-  $('disconnectBtn').disabled = !connected;
-  $('allOnBtn').disabled = !connected;
-  $('allOffBtn').disabled = !connected;
-  $('readBtn').disabled = !connected;
-  renderRelays();
-  renderGroups();
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(el =>
+    el.classList.toggle("active",el.id===id));
+  document.querySelectorAll(".tab").forEach(el =>
+    el.classList.toggle("active",el.dataset.page===id));
 }
 
-function validUUID(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+document.querySelectorAll(".tab").forEach(button =>
+  button.addEventListener("click",()=>showPage(button.dataset.page)));
+
+function setConnection(text,ok=false) {
+  $("connection").textContent=text;
+  $("connection").className="pill"+(ok?" ok":"");
+  $("linkStatus").textContent=text;
 }
 
 function renderRelays() {
-  $('relayList').innerHTML = relayNames.map((name,index) => `
+  $("relayGrid").innerHTML=settings.relayNames.map((name,i)=>`
     <div class="relay">
-      <div><b>${escapeHTML(name)}</b><br><small>R${index+1}</small></div>
-      <span class="pill ${relayStates[index]?'on':''}">
-        ${relayStates[index]?'已開啟':'已關閉'}
-      </span>
-      <button class="small" data-relay="${index}" ${!controlChar?'disabled':''}>
-        ${relayStates[index]?'關閉':'開啟'}
-      </button>
-    </div>
-  `).join('');
-
-  document.querySelectorAll('[data-relay]').forEach(button => {
-    button.onclick = () => sendRelay(
-      Number(button.dataset.relay),
-      !relayStates[Number(button.dataset.relay)]
-    );
-  });
-}
-
-function renderChecks() {
-  $('groupChecks').innerHTML = relayNames.map((name,index) => `
-    <label class="checkitem">
-      <input type="checkbox" value="${index}">
-      <span>${escapeHTML(name)}</span>
-    </label>
-  `).join('');
-}
-
-function renderNameEditors() {
-  $('nameEditors').innerHTML = relayNames.map((name,index) => `
-    <label class="note" for="relayName${index}">R${index+1}</label>
-    <input class="field nameEditor" id="relayName${index}"
-      maxlength="24" value="${escapeHTML(name)}">
-  `).join('');
-}
-
-function renderGroups() {
-  if (!groups.length) {
-    $('groupList').innerHTML = '<p class="note">尚未建立控制組合。</p>';
-    return;
-  }
-
-  $('groupList').innerHTML = groups.map((group,index) => `
-    <div class="group">
-      <div class="grouphead">
-        <b>${escapeHTML(group.name)}</b>
-        <button class="secondary small" data-delete-group="${index}">刪除</button>
+      <div class="relaytop">
+        <span class="relayname">${escapeHtml(name)}</span>
+        <button class="switch ${relayStates[i]?"on":""}"
+          data-relay="${i}" aria-label="${escapeHtml(name)}"
+          aria-pressed="${relayStates[i]}"></button>
       </div>
-      <div class="note" style="margin-top:8px">
-        ${group.relays.map(i=>escapeHTML(relayNames[i])).join('、')}
-      </div>
-      <div class="groupactions">
-        <button class="green" data-open-group="${index}" ${!controlChar?'disabled':''}>開啟所選</button>
-        <button class="red" data-close-group="${index}" ${!controlChar?'disabled':''}>關閉所選</button>
-      </div>
-    </div>
-  `).join('');
+      <div class="state">${relayStates[i]?"開啟":"關閉"} · R${i+1}</div>
+    </div>`).join("");
 
-  document.querySelectorAll('[data-delete-group]').forEach(button => {
-    button.onclick = () => {
-      groups.splice(Number(button.dataset.deleteGroup),1);
-      localStorage.setItem(KEY_GROUPS,JSON.stringify(groups));
-      renderGroups();
-    };
-  });
+  $("relayGrid").querySelectorAll("[data-relay]").forEach(button =>
+    button.addEventListener("click",()=>
+      toggleRelay(Number(button.dataset.relay))));
 
-  document.querySelectorAll('[data-open-group]').forEach(button => {
-    button.onclick = () => runGroup(groups[Number(button.dataset.openGroup)],true);
-  });
-
-  document.querySelectorAll('[data-close-group]').forEach(button => {
-    button.onclick = () => runGroup(groups[Number(button.dataset.closeGroup)],false);
-  });
+  $("relayStatus").textContent=connected?"已連線":"尚未連線";
+  $("allOn").disabled=!connected;
+  $("allOff").disabled=!connected;
 }
 
-async function sendRelay(index,on) {
-  if (!controlChar) {
-    setStatus('請先連線藍牙。');
-    return false;
-  }
-
-  try {
-    const command = new TextEncoder().encode(`R${index+1}:${on?1:0}`);
-    if (controlChar.writeValueWithResponse) {
-      await controlChar.writeValueWithResponse(command);
-    } else {
-      await controlChar.writeValue(command);
-    }
-
-    relayStates[index] = on;
-    renderRelays();
-    renderGroups();
-    setStatus(`已送出 R${index+1}:${on?1:0}`);
-    return true;
-  } catch (error) {
-    setStatus('指令傳送失敗：'+error.message);
-    return false;
-  }
-}
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve,ms));
-
-async function runBatch(indices,on) {
-  if (batchBusy) {
-    setStatus('上一組指令尚未完成，請稍候。');
-    return;
-  }
-
-  if (!controlChar) {
-    setStatus('請先連線藍牙。');
-    return;
-  }
-
-  batchBusy = true;
-  try {
-    for (const index of indices) {
-      const success = await sendRelay(index,on);
-      if (!success) break;
-      await sleep(120);
-    }
-  } finally {
-    batchBusy = false;
-  }
-}
-
-async function connectBLE() {
-  if (!navigator.bluetooth) {
-    setStatus('瀏覽器不支援 Web Bluetooth。請使用支援的 Android Chrome 與 HTTPS 網站。');
-    return;
-  }
-
-  const serviceUUID = $('serviceUuid').value.trim();
-  const characteristicUUID = $('characteristicUuid').value.trim();
-
-  if (!validUUID(serviceUUID) || !validUUID(characteristicUUID)) {
-    setStatus('UUID 格式不正確，請檢查設定。');
-    return;
-  }
-
-  try {
-    setStatus('請在藍牙選擇視窗中選擇 ESP32-S3 裝置。');
-
-    device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices:true,
-      optionalServices:[serviceUUID]
-    });
-
-    device.addEventListener('gattserverdisconnected',onDisconnected);
-
-    gattServer = await device.gatt.connect();
-    const service = await gattServer.getPrimaryService(serviceUUID);
-    controlChar = await service.getCharacteristic(characteristicUUID);
-
-    setConnected(true);
-
-    const alias = $('deviceAlias').value.trim();
-    setStatus('已連線：'+(alias ? alias+' ('+(device.name||'未命名')+')' : device.name||'未命名裝置'));
-
-    await enableBatteryNotifications();
-
-    if (controlChar.properties.read) {
-      try {
-        const value = await controlChar.readValue();
-        parseBatteryData(value);
-      } catch (error) {
-        console.log('初始讀取略過：',error.message);
-      }
-    }
-  } catch (error) {
-    controlChar = null;
-    gattServer = null;
-    setConnected(false);
-    setStatus('連線失敗：'+error.message);
-  }
-}
-
-function onDisconnected() {
-  controlChar = null;
-  gattServer = null;
-  setConnected(false);
-  $('notifyStatus').textContent = '藍牙已中斷。';
-  $('bmsStatus').textContent = 'ESP32-S3 連線已中斷。';
-  $('bmsPill').textContent = '未連線';
-  setStatus('藍牙已中斷，請重新連線。');
-}
-
-async function disconnectBLE() {
-  try {
-    if (controlChar) {
-      controlChar.removeEventListener('characteristicvaluechanged',onBmsNotify);
-    }
-    if (device && device.gatt.connected) device.gatt.disconnect();
-  } catch (error) {
-    console.log(error);
-  }
-
-  controlChar = null;
-  gattServer = null;
-  setConnected(false);
-  setStatus('已中斷連線。');
-}
-
-async function enableBatteryNotifications() {
-  if (!controlChar) return;
-
-  if (!controlChar.properties.notify) {
-    $('notifyStatus').textContent =
-      '此特徵值沒有宣告 Notify。韌體需要支援 PROPERTY_NOTIFY。';
-    return;
-  }
-
-  try {
-    controlChar.addEventListener('characteristicvaluechanged',onBmsNotify);
-    await controlChar.startNotifications();
-    $('notifyStatus').textContent = 'Notify 已啟用，等待電池資料。';
-  } catch (error) {
-    $('notifyStatus').textContent = '啟用通知失敗：'+error.message;
-  }
-}
-
-function onBmsNotify(event) {
-  parseBatteryData(event.target.value);
-}
-
-function parseBatteryData(dataView) {
-  const bytes = new Uint8Array(
-    dataView.buffer,
-    dataView.byteOffset,
-    dataView.byteLength
-  );
-
-  const message = new TextDecoder().decode(bytes).replace(/\0+$/,'').trim();
-
-  if (!message) return;
-
-  let data;
-  try {
-    data = JSON.parse(message);
-  } catch {
-    $('notifyStatus').textContent = '收到非 JSON 資料，未更新電池數值。';
-    return;
-  }
-
-  if (data.valid !== true) {
-    $('notifyStatus').textContent = String(data.status || 'BMS 資料尚未有效。');
-    return;
-  }
-
-  const voltage = Number(data.voltage);
-  const soc = Number(data.socRaw);
-  const currentRaw = Number(data.currentRaw);
-
-  if (!Number.isFinite(voltage) ||
-      !Number.isFinite(soc) ||
-      !Number.isFinite(currentRaw) ||
-      voltage <= 0 || voltage > 150 ||
-      soc < 0 || soc > 100) {
-    $('notifyStatus').textContent = '資料格式或數值不符合目前驗證範圍。';
-    return;
-  }
-
-  $('voltageValue').textContent = voltage.toFixed(2)+' V';
-  $('socValue').textContent = Math.round(soc)+' %';
-  $('socProgress').style.width = Math.max(0,Math.min(100,soc))+'%';
-  $('currentValue').textContent = String(currentRaw);
-  $('updateTime').textContent = new Date().toLocaleTimeString('zh-TW',{hour12:false});
-  $('bmsPill').textContent = '已收到資料';
-  $('bmsPill').className = 'pill on';
-  $('bmsStatus').textContent = '已收到 JSON 資料；電壓與 SOC 倍率仍需核對。';
-  $('notifyStatus').textContent = '資料解析成功。電流暫時顯示原始值，尚未換算安培。';
-}
-
-async function readBattery() {
-  if (!controlChar) return;
-
-  if (!controlChar.properties.read) {
-    $('notifyStatus').textContent = '特徵值不支援 Read，請等待 Notify。';
-    return;
-  }
-
-  try {
-    const value = await controlChar.readValue();
-    parseBatteryData(value);
-  } catch (error) {
-    $('notifyStatus').textContent = '讀取失敗：'+error.message;
-  }
-}
-
-$('connectBtn').onclick = connectBLE;
-$('disconnectBtn').onclick = disconnectBLE;
-$('allOnBtn').onclick = () => runBatch([0,1,2,3],true);
-$('allOffBtn').onclick = () => runBatch([0,1,2,3],false);
-$('readBtn').onclick = readBattery;
-
-$('saveGroupBtn').onclick = () => {
-  const name = $('groupName').value.trim();
-  const relays = [...document.querySelectorAll('#groupChecks input:checked')]
-    .map(input => Number(input.value));
-
-  if (!name) {
-    alert('請輸入組合名稱。');
-    return;
-  }
-  if (!relays.length) {
-    alert('請至少選擇一個繼電器。');
-    return;
-  }
-
-  groups.push({name,relays});
-  localStorage.setItem(KEY_GROUPS,JSON.stringify(groups));
-  $('groupName').value = '';
-  document.querySelectorAll('#groupChecks input').forEach(input => input.checked=false);
-  renderGroups();
-};
-
-$('clearChecksBtn').onclick = () => {
-  document.querySelectorAll('#groupChecks input').forEach(input => input.checked=false);
-};
-
-$('saveNamesBtn').onclick = () => {
-  relayNames = [...document.querySelectorAll('.nameEditor')]
-    .map((input,index) => input.value.trim() || `繼電器 ${index+1}`);
-
-  localStorage.setItem(KEY_NAMES,JSON.stringify(relayNames));
+async function writeRelay(index,on) {
+  if(!connected||!relayChar) throw new Error("請先連線 ESP32");
+  const command=`R${index+1}:${on?1:0}`;
+  await relayChar.writeValue(new TextEncoder().encode(command));
+  relayStates[index]=on;
   renderRelays();
-  renderChecks();
-  renderNameEditors();
-  renderGroups();
-  setStatus('繼電器名稱已儲存。');
-};
+  log("送出指令："+command);
+}
 
-$('resetNamesBtn').onclick = () => {
-  relayNames = DEFAULT_NAMES.slice();
-  localStorage.setItem(KEY_NAMES,JSON.stringify(relayNames));
-  renderRelays();
-  renderChecks();
-  renderNameEditors();
-  renderGroups();
-};
+async function toggleRelay(index) {
+  try { await writeRelay(index,!relayStates[index]); }
+  catch(error) { log("控制失敗："+error.message); alert(error.message); }
+}
 
-$('saveBleBtn').onclick = () => {
-  const config = {
-    serviceUuid:$('serviceUuid').value.trim(),
-    characteristicUuid:$('characteristicUuid').value.trim(),
-    deviceAlias:$('deviceAlias').value.trim()
-  };
-
-  if (!validUUID(config.serviceUuid) || !validUUID(config.characteristicUuid)) {
-    alert('UUID 格式不正確。');
-    return;
-  }
-
-  bleConfig = config;
-  localStorage.setItem(KEY_BLE,JSON.stringify(bleConfig));
-  setStatus('藍牙設定已儲存。');
-};
-
-$('resetUuidBtn').onclick = () => {
-  $('serviceUuid').value = DEFAULT_SERVICE;
-  $('characteristicUuid').value = DEFAULT_CHAR;
-};
-
-$('clearBmsBtn').onclick = () => {
-  $('voltageValue').textContent = '-- V';
-  $('socValue').textContent = '-- %';
-  $('currentValue').textContent = '--';
-  $('updateTime').textContent = '尚無';
-  $('socProgress').style.width = '0%';
-  $('bmsPill').textContent = '等待資料';
-  $('bmsPill').className = 'pill';
-  $('bmsStatus').textContent = '等待 ESP32 傳送 BMS 資料。';
-  $('notifyStatus').textContent = '尚未收到 BMS 通知。';
-};
-
-document.querySelectorAll('[data-page]').forEach(button => {
-  button.addEventListener('click',() => {
-    document.querySelectorAll('.tab').forEach(tab =>
-      tab.classList.toggle('active',tab===button)
-    );
-    document.querySelectorAll('.page').forEach(page =>
-      page.hidden = page.id !== button.dataset.page
-    );
-  });
+$("allOn").addEventListener("click",async()=>{
+  try { for(let i=0;i<4;i++) await writeRelay(i,true); }
+  catch(error) { log("全部開啟失敗："+error.message); alert(error.message); }
 });
 
-$('serviceUuid').value = bleConfig.serviceUuid || DEFAULT_SERVICE;
-$('characteristicUuid').value = bleConfig.characteristicUuid || DEFAULT_CHAR;
-$('deviceAlias').value = bleConfig.deviceAlias || '';
+$("allOff").addEventListener("click",async()=>{
+  try { for(let i=0;i<4;i++) await writeRelay(i,false); }
+  catch(error) { log("全部關閉失敗："+error.message); alert(error.message); }
+});
 
-renderRelays();
-renderChecks();
-renderNameEditors();
-renderGroups();
+function handleBatteryValue(event) {
+  const value=event.target.value;
+  const bytes=new Uint8Array(value.buffer,value.byteOffset,value.byteLength);
+  lastHex=Array.from(bytes,b=>b.toString(16).padStart(2,"0").toUpperCase()).join(" ");
+  $("hexLog").textContent=lastHex||"(空資料)";
+
+  const text=new TextDecoder().decode(bytes);
+  lastJson=text;
+  $("jsonLog").textContent=text||"(空資料)";
+  $("batteryTime").textContent=new Date().toLocaleString();
+
+  let data;
+  try { data=JSON.parse(text); }
+  catch(error) {
+    $("bmsStatus").textContent="格式錯誤";
+    $("batteryInfo").textContent="通知不是完整 JSON。請檢查韌體與 BLE MTU。";
+    log("收到非 JSON 電池通知");
+    return;
+  }
+
+  const valid=data.valid===true;
+  $("bmsStatus").textContent=valid?"資料有效":"待驗證";
+  $("batteryInfo").textContent=data.status||(valid?"已收到資料":"欄位尚未驗證");
+
+  $("voltage").innerHTML=valid&&Number.isFinite(Number(data.voltage))
+    ?`${Number(data.voltage).toFixed(2)}<span class="unit"> V</span>`
+    :'--<span class="unit"> V</span>';
+
+  $("soc").innerHTML=valid&&Number.isFinite(Number(data.socRaw))&&Number(data.socRaw)>=0&&Number(data.socRaw)<=100
+    ?`${Number(data.socRaw)}<span class="unit"> %</span>`
+    :'--<span class="unit"> %</span>';
+
+  $("socBar").style.width=valid&&Number(data.socRaw)>=0&&Number(data.socRaw)<=100
+    ?`${Number(data.socRaw)}%`:"0%";
+
+  $("current").innerHTML=valid&&Number.isFinite(Number(data.currentA))
+    ?`${Number(data.currentA).toFixed(2)}<span class="unit"> A</span>`
+    :'--<span class="unit"> A</span>';
+
+  log("收到電池通知；valid="+valid);
+}
+
+async function connectBle() {
+  if(!navigator.bluetooth) {
+    alert("目前瀏覽器不支援 Web Bluetooth。請用支援的 Android Chrome，並以 HTTPS 開啟。");
+    return;
+  }
+
+  try {
+    $("connectBtn").disabled=true;
+    log("開啟 BLE 裝置選擇器");
+
+    device=await navigator.bluetooth.requestDevice({
+      filters:[{services:[settings.serviceUuid]}],
+      optionalServices:[settings.serviceUuid]
+    });
+
+    device.addEventListener("gattserverdisconnected",disconnected);
+    $("deviceLabel").textContent=device.name||settings.deviceName;
+    $("deviceSub").textContent="正在連線…";
+
+    server=await device.gatt.connect();
+    const service=await server.getPrimaryService(settings.serviceUuid);
+    relayChar=await service.getCharacteristic(settings.relayUuid);
+
+    try {
+      batteryChar=await service.getCharacteristic(settings.batteryUuid);
+      await batteryChar.startNotifications();
+      batteryChar.addEventListener("characteristicvaluechanged",handleBatteryValue);
+      log("已訂閱電池 Notify");
+
+      try {
+        const value=await batteryChar.readValue();
+        handleBatteryValue({target:{value}});
+      } catch(error) {
+        log("電池初始 Read 失敗："+error.message);
+      }
+    } catch(error) {
+      batteryChar=null;
+      log("無法取得電池特徵值："+error.message);
+    }
+
+    connected=true;
+    setConnection("已連線",true);
+    $("deviceSub").textContent="BLE 已連線";
+    $("disconnectBtn").disabled=false;
+    $("connectBtn").textContent="重新選擇裝置";
+    renderRelays();
+    log("ESP32 連線成功");
+  } catch(error) {
+    log("連線失敗："+error.message);
+    if(error.name!=="NotFoundError") alert("連線失敗："+error.message);
+    setConnection("未連線");
+  } finally {
+    $("connectBtn").disabled=false;
+  }
+}
+
+function disconnected() {
+  connected=false;
+  server=null;
+  relayChar=null;
+  batteryChar=null;
+  setConnection("未連線");
+  $("deviceSub").textContent="藍牙已中斷";
+  $("disconnectBtn").disabled=true;
+  renderRelays();
+  log("ESP32 BLE 已中斷");
+}
+
+$("connectBtn").addEventListener("click",connectBle);
+$("disconnectBtn").addEventListener("click",()=>{
+  if(device&&device.gatt&&device.gatt.connected) device.gatt.disconnect();
+  else disconnected();
+});
+
+function loadSettings() {
+  try {
+    const saved=JSON.parse(localStorage.getItem("ecdrive.settings")||"null");
+    if(saved) settings={...settings,...saved};
+  } catch(error) {}
+
+  $("deviceName").value=settings.deviceName;
+  $("serviceUuid").value=settings.serviceUuid;
+  $("relayUuid").value=settings.relayUuid;
+  $("batteryUuid").value=settings.batteryUuid;
+  $("relayNames").value=settings.relayNames.join("\n");
+  renderRelays();
+}
+
+$("saveSettings").addEventListener("click",()=>{
+  const names=$("relayNames").value.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,4);
+  while(names.length<4) names.push("繼電器 "+(names.length+1));
+
+  const next={
+    deviceName:$("deviceName").value.trim()||DEFAULTS.deviceName,
+    serviceUuid:$("serviceUuid").value.trim(),
+    relayUuid:$("relayUuid").value.trim(),
+    batteryUuid:$("batteryUuid").value.trim(),
+    relayNames:names
+  };
+
+  for(const key of ["serviceUuid","relayUuid","batteryUuid"]) {
+    if(!/^[0-9a-fA-F-]{4,36}$/.test(next[key])) {
+      alert("請檢查 UUID 格式");
+      return;
+    }
+  }
+
+  settings=next;
+  localStorage.setItem("ecdrive.settings",JSON.stringify(settings));
+  renderRelays();
+  renderComboChecks();
+  renderCombos();
+  log("設定已儲存；請重新連線套用 UUID");
+  alert("設定已儲存。若已連線，請先中斷再重新連線。");
+});
+
+$("resetSettings").addEventListener("click",()=>{
+  if(!confirm("確定還原預設設定？")) return;
+  settings=JSON.parse(JSON.stringify(DEFAULTS));
+  localStorage.removeItem("ecdrive.settings");
+  loadSettings();
+  renderCombos();
+  log("已還原預設設定");
+});
+
+function renderComboChecks() {
+  $("comboChecks").innerHTML=settings.relayNames.map((name,i)=>`
+    <label class="check"><input type="checkbox" data-check="${i}" checked>${escapeHtml(name)}</label>`
+  ).join("");
+}
+
+function saveCombos() {
+  localStorage.setItem("ecdrive.combos",JSON.stringify(combos));
+}
+
+function renderCombos() {
+  renderComboChecks();
+
+  $("comboList").innerHTML=combos.length?combos.map((combo,index)=>`
+    <div class="combo">
+      <strong>${escapeHtml(combo.name)}</strong>
+      <div class="muted" style="margin:8px 0">
+        ${combo.states.map((state,i)=>escapeHtml(settings.relayNames[i])+":"+(state?"開":"關")).join(" · ")}
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" data-apply="${index}">套用</button>
+        <button class="btn danger" data-delete="${index}">刪除</button>
+      </div>
+    </div>`).join(""):'<p class="muted">尚未儲存組合。</p>';
+
+  $("comboList").querySelectorAll("[data-delete]").forEach(button=>
+    button.addEventListener("click",()=>{
+      combos.splice(Number(button.dataset.delete),1);
+      saveCombos();
+      renderCombos();
+      log("已刪除組合");
+    }));
+
+  $("comboList").querySelectorAll("[data-apply]").forEach(button=>
+    button.addEventListener("click",async()=>{
+      if(!connected){alert("請先連線 ESP32");return;}
+      const combo=combos[Number(button.dataset.apply)];
+      try {
+        for(let i=0;i<4;i++) await writeRelay(i,!!combo.states[i]);
+        log("已套用組合："+combo.name);
+      } catch(error) {
+        alert("套用失敗："+error.message);
+        log("套用失敗："+error.message);
+      }
+    }));
+}
+
+$("saveCombo").addEventListener("click",()=>{
+  const name=$("comboName").value.trim();
+  if(!name){alert("請輸入組合名稱");return;}
+
+  const states=Array.from($("comboChecks").querySelectorAll("input"))
+    .map(input=>input.checked);
+
+  combos.push({name,states});
+  saveCombos();
+  renderCombos();
+  $("comboName").value="";
+  log("已儲存組合："+name);
+});
+
+$("copyJson").addEventListener("click",async()=>{
+  try {
+    await navigator.clipboard.writeText(lastJson||"");
+    log("已複製 JSON");
+  } catch(error) {
+    alert("複製失敗，請手動選取 JSON。");
+  }
+});
+
+$("clearLogs").addEventListener("click",()=>{
+  $("eventLog").textContent="除錯紀錄已清除。";
+  $("jsonLog").textContent="尚無資料";
+  $("hexLog").textContent="尚無資料";
+});
+
+loadSettings();
+
+try {
+  combos=JSON.parse(localStorage.getItem("ecdrive.combos")||"[]");
+  if(!Array.isArray(combos)) combos=[];
+} catch(error) {
+  combos=[];
+}
+renderCombos();
+
+if(!navigator.bluetooth) {
+  log("此瀏覽器不支援 Web Bluetooth；請改用支援的瀏覽器與 HTTPS。");
+}
+})();
 </script>
 </body>
 </html>

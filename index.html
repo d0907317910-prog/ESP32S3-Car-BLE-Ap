@@ -1,388 +1,788 @@
 
-#include <Arduino.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
-#include <BLEClient.h>
-#include <BLEScan.h>
-#include <BLEAdvertisedDevice.h>
 
-// ===== 四路繼電器 =====
-const uint8_t RELAY_PINS[4] = {4, 5, 6, 7};
-const bool RELAY_ACTIVE_LOW = true;
-
-// ===== 手機網站 BLE 設定 =====
-const char *DEVICE_NAME = "ESP32-S3-Car";
-
-const char *SERVICE_UUID =
-  "12345678-1234-5678-1234-56789abcdef0";
-
-const char *RELAY_UUID =
-  "12345678-1234-5678-1234-56789abcdef1";
-
-const char *BATTERY_UUID =
-  "12345678-1234-5678-1234-56789abcdef2";
-
-// ===== ANT BMS 設定 =====
-static BLEUUID BMS_SERVICE_UUID((uint16_t)0xFFE0);
-static BLEUUID BMS_CHAR_UUID((uint16_t)0xFFE1);
-
-BLECharacteristic *relayCharacteristic = nullptr;
-BLECharacteristic *batteryCharacteristic = nullptr;
-
-BLEClient *bmsClient = nullptr;
-BLERemoteCharacteristic *bmsCharacteristic = nullptr;
-
-BLEAdvertisedDevice *foundBms = nullptr;
-
-bool phoneConnected = false;
-bool bmsConnected = false;
-bool bmsFound = false;
-
-unsigned long lastScan = 0;
-unsigned long lastRead = 0;
-unsigned long lastNotify = 0;
-
-String batteryJson =
-  "{\"valid\":false,\"status\":\"等待 ANT BMS\",\"voltage\":0,\"socRaw\":0,\"currentRaw\":0}";
-
-// ===== 繼電器控制 =====
-void setRelay(uint8_t index, bool on) {
-  if (index >= 4) return;
-
-  uint8_t level;
-
-  if (RELAY_ACTIVE_LOW) {
-    level = on ? LOW : HIGH;
-  } else {
-    level = on ? HIGH : LOW;
-  }
-
-  digitalWrite(RELAY_PINS[index], level);
-
-  Serial.printf("R%u:%u\n", index + 1, on ? 1 : 0);
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Ec電驅</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#0b1220;
+  --panel:#141f31;
+  --line:#293951;
+  --text:#edf4ff;
+  --muted:#a9b8cc;
+  --blue:#5da9ff;
+  --green:#2bd576;
+  --red:#ff5d6c;
 }
-
-// ===== 手機指令 =====
-class RelayCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *characteristic) override {
-    std::string value = characteristic->getValue();
-
-    if (value.length() != 4 ||
-        value[0] != 'R' ||
-        value[2] != ':') {
-      Serial.println("無效的繼電器指令");
-      return;
-    }
-
-    if (value[1] < '1' || value[1] > '4' ||
-        (value[3] != '0' && value[3] != '1')) {
-      Serial.println("無效的繼電器指令");
-      return;
-    }
-
-    setRelay(value[1] - '1', value[3] == '1');
-  }
-};
-
-// ===== 手機連線狀態 =====
-class ServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer *server) override {
-    phoneConnected = true;
-    Serial.println("手機已連線");
-  }
-
-  void onDisconnect(BLEServer *server) override {
-    phoneConnected = false;
-    Serial.println("手機已中斷");
-    BLEDevice::startAdvertising();
-  }
-};
-
-// ===== 搜尋 ANT BMS =====
-class ScanCallbacks : public BLEAdvertisedDeviceCallbacks {
-  void onResult(BLEAdvertisedDevice device) override {
-    String name = String(device.getName().c_str());
-
-    if (name.startsWith("ANT@")) {
-      Serial.print("找到 BMS：");
-      Serial.println(name);
-
-      BLEDevice::getScan()->stop();
-
-      if (foundBms != nullptr) {
-        delete foundBms;
-        foundBms = nullptr;
-      }
-
-      foundBms = new BLEAdvertisedDevice(device);
-      bmsFound = true;
-    }
-  }
-};
-
-// ===== HEX 輸出 =====
-void printHex(const uint8_t *data, size_t length) {
-  for (size_t i = 0; i < length; i++) {
-    if (data[i] < 0x10) Serial.print('0');
-    Serial.print(data[i], HEX);
-    Serial.print(' ');
-  }
-  Serial.println();
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  padding:16px 12px 35px;
+  background:linear-gradient(160deg,#0b1220,#142238);
+  color:var(--text);
+  font-family:Arial,"Noto Sans TC",sans-serif;
 }
-
-// ===== 解析暫定欄位 =====
-uint16_t readU16LE(const uint8_t *data, size_t offset) {
-  return (uint16_t)data[offset] |
-         ((uint16_t)data[offset + 1] << 8);
+main { max-width:560px; margin:auto; }
+header { text-align:center; padding:12px 0 20px; }
+h1 { margin:0; font-size:30px; letter-spacing:3px; }
+h2 { font-size:17px; margin:0 0 14px; }
+.muted,.note,small { color:var(--muted); }
+.muted { font-size:13px; margin-top:6px; }
+.card {
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:17px;
+  padding:16px;
+  margin:12px 0;
 }
-
-int16_t readI16LE(const uint8_t *data, size_t offset) {
-  return (int16_t)readU16LE(data, offset);
+button {
+  border:0;
+  border-radius:11px;
+  min-height:43px;
+  padding:11px 13px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  background:#dce8f7;
+  color:#101827;
 }
-
-void parseBmsPacket(const uint8_t *data, size_t length) {
-  Serial.printf("BMS 封包長度：%u bytes\n",
-                (unsigned)length);
-
-  Serial.print("HEX：");
-  printHex(data, length);
-
-  // 目前只是待驗證的欄位假設
-  if (length < 100) {
-    batteryJson =
-      "{\"valid\":false,\"status\":\"封包長度不足\",\"voltage\":0,\"socRaw\":0,\"currentRaw\":0}";
-    return;
-  }
-
-  uint16_t voltageRaw = readU16LE(data, 94);
-  int16_t currentRaw = readI16LE(data, 96);
-  uint16_t socRaw = readU16LE(data, 98);
-
-  float voltage = voltageRaw / 100.0f;
-
-  Serial.printf("暫定電壓：%.2f V\n", voltage);
-  Serial.printf("電流原始值：%d\n", currentRaw);
-  Serial.printf("SOC 原始值：%u\n", socRaw);
-
-  // 防止明顯不合理的資料被當成有效值
-  if (voltage <= 0 || voltage > 150 || socRaw > 100) {
-    batteryJson =
-      "{\"valid\":false,\"status\":\"欄位或倍率尚未驗證\",\"voltage\":0,\"socRaw\":0,\"currentRaw\":0}";
-    return;
-  }
-
-  char output[180];
-
-  snprintf(
-    output,
-    sizeof(output),
-    "{\"valid\":true,\"voltage\":%.2f,\"socRaw\":%u,\"currentRaw\":%d}",
-    voltage,
-    socRaw,
-    currentRaw
-  );
-
-  batteryJson = String(output);
+button:disabled { opacity:.4; cursor:not-allowed; }
+.primary { background:var(--blue); flex:1; }
+.green { background:var(--green); flex:1; }
+.red { background:var(--red); flex:1; }
+.secondary { background:#263750; color:var(--text); }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+.status {
+  margin-top:10px;
+  font-size:13px;
+  color:var(--muted);
+  overflow-wrap:anywhere;
+  line-height:1.6;
 }
-
-// ===== 接收 BMS Notify =====
-void onBmsNotify(
-  BLERemoteCharacteristic *characteristic,
-  uint8_t *data,
-  size_t length,
-  bool isNotify
-) {
-  parseBmsPacket(data, length);
+.note { font-size:12px; line-height:1.7; }
+.tabs {
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  padding:7px;
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:14px;
+  margin-bottom:12px;
 }
+.tab {
+  background:#202d42;
+  color:var(--text);
+  padding:10px 2px;
+  font-size:12px;
+}
+.tab.active { background:var(--blue); color:#07111d; }
+.page[hidden] { display:none; }
+.field {
+  display:block;
+  width:100%;
+  margin:6px 0 12px;
+  padding:12px;
+  background:#0c1524;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:14px;
+}
+.relay {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:8px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+.relay:last-child { border-bottom:0; }
+.pill {
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  background:#27364b;
+  color:var(--muted);
+  font-size:11px;
+  white-space:nowrap;
+}
+.pill.on { background:#16452f; color:#7bf0ae; }
+.small { min-height:36px; padding:8px 10px; font-size:12px; }
+.checkgrid,.metrics {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.checkitem {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#0d1727;
+  font-size:13px;
+}
+.checkitem input { width:18px; height:18px; accent-color:var(--green); }
+.group {
+  background:#0d1727;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  margin-top:10px;
+}
+.grouphead,.groupactions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.groupactions { margin-top:10px; }
+.groupactions button { flex:1; }
+.metric {
+  min-width:0;
+  background:#0d1727;
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:13px;
+}
+.metric-label { color:var(--muted); font-size:12px; }
+.metric-value {
+  font-size:23px;
+  font-weight:750;
+  margin-top:9px;
+  overflow-wrap:anywhere;
+}
+.metric-sub { color:var(--muted); font-size:11px; margin-top:6px; }
+.progress {
+  height:7px;
+  background:#293951;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress div {
+  width:0;
+  height:100%;
+  background:var(--green);
+}
+.warning {
+  border:1px solid #66552a;
+  background:#2b2517;
+  color:#ffe29a;
+  padding:11px;
+  border-radius:11px;
+  font-size:12px;
+  line-height:1.7;
+  margin-top:12px;
+}
+footer { text-align:center; font-size:11px; color:var(--muted); padding:15px 0; }
+@media(max-width:370px) {
+  .tab { font-size:10px; }
+  .metric-value { font-size:20px; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Ec電驅</h1>
+  <div class="muted">智慧電控 · BLE · ANT BMS</div>
+</header>
 
-// ===== 連線 BMS =====
-bool connectBms() {
-  if (foundBms == nullptr) return false;
+<nav class="tabs">
+  <button class="tab active" data-page="controlPage">電源控制</button>
+  <button class="tab" data-page="groupsPage">控制組合</button>
+  <button class="tab" data-page="batteryPage">電池監控</button>
+  <button class="tab" data-page="settingsPage">設定</button>
+</nav>
 
-  Serial.println("正在連線 ANT BMS...");
+<section id="controlPage" class="page">
+  <div class="card">
+    <h2>藍牙連線</h2>
+    <div class="row">
+      <button id="connectBtn" class="primary">搜尋藍牙裝置</button>
+      <button id="disconnectBtn" class="secondary" disabled>中斷</button>
+    </div>
+    <div id="connectionStatus" class="status">尚未連線</div>
+    <p class="note">請使用支援 Web Bluetooth 的瀏覽器，並透過 HTTPS 網址開啟網站。</p>
+  </div>
 
-  if (bmsClient == nullptr) {
-    bmsClient = BLEDevice::createClient();
-  }
+  <div class="card">
+    <h2>快速控制</h2>
+    <div class="row">
+      <button id="allOnBtn" class="green" disabled>全部開啟</button>
+      <button id="allOffBtn" class="red" disabled>全部關閉</button>
+    </div>
+  </div>
 
-  if (!bmsClient->connect(foundBms)) {
-    Serial.println("BMS 連線失敗");
-    return false;
-  }
+  <div class="card">
+    <h2>四路繼電器</h2>
+    <div id="relayList"></div>
+  </div>
+</section>
 
-  BLERemoteService *service = nullptr;
+<section id="groupsPage" class="page" hidden>
+  <div class="card">
+    <h2>新增控制組合</h2>
+    <label for="groupName" class="note">組合名稱</label>
+    <input id="groupName" class="field" maxlength="24" placeholder="例如：夜間模式">
+    <div id="groupChecks" class="checkgrid"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="saveGroupBtn" class="primary">儲存組合</button>
+      <button id="clearChecksBtn" class="secondary">清除勾選</button>
+    </div>
+    <div class="note" style="margin-top:10px">儲存後可以一次開啟或關閉所選繼電器。</div>
+    <div id="groupList"></div>
+  </div>
+</section>
 
+<section id="batteryPage" class="page" hidden>
+  <div class="card">
+    <h2>ANT BMS 電池監控</h2>
+    <span id="bmsPill" class="pill">等待資料</span>
+    <div id="bmsStatus" class="status">等待 ESP32 傳送 BMS 資料。</div>
+
+    <div class="metrics" style="margin-top:14px">
+      <div class="metric">
+        <div class="metric-label">電池總電壓</div>
+        <div id="voltageValue" class="metric-value">-- V</div>
+        <div class="metric-sub">待確認倍率</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">SOC 剩餘電量</div>
+        <div id="socValue" class="metric-value">-- %</div>
+        <div class="progress"><div id="socProgress"></div></div>
+        <div class="metric-sub">待確認倍率</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">電流原始值</div>
+        <div id="currentValue" class="metric-value">--</div>
+        <div class="metric-sub">倍率尚未驗證</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">最後更新</div>
+        <div id="updateTime" class="metric-value" style="font-size:18px">尚無</div>
+        <div class="metric-sub">以本機時間顯示</div>
+      </div>
+    </div>
+
+    <div class="warning">
+      電池資料必須由 ESP32 韌體實際傳送才能顯示。電壓及 SOC 的欄位倍率尚未完全驗證，不能用此頁作為高壓電池的安全保護依據。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>通訊狀態</h2>
+    <div id="notifyStatus" class="status">尚未收到 BMS 通知。</div>
+    <div class="row" style="margin-top:10px">
+      <button id="readBtn" class="secondary" disabled>讀取目前資料</button>
+      <button id="clearBmsBtn" class="secondary">清除畫面</button>
+    </div>
+    <p class="note">此網站接收的是 ESP32 傳來的 JSON 資料，不會直接掃描 ANT BMS。ESP32 韌體需要負責連接 BMS，再將資料通知手機。</p>
+  </div>
+</section>
+
+<section id="settingsPage" class="page" hidden>
+  <div class="card">
+    <h2>藍牙設定</h2>
+    <label class="note" for="deviceAlias">裝置顯示備註</label>
+    <input id="deviceAlias" class="field" maxlength="32" placeholder="我的電驅控制器">
+
+    <label class="note" for="serviceUuid">Service UUID</label>
+    <input id="serviceUuid" class="field" spellcheck="false">
+
+    <label class="note" for="characteristicUuid">Characteristic UUID</label>
+    <input id="characteristicUuid" class="field" spellcheck="false">
+
+    <div class="row">
+      <button id="saveBleBtn" class="primary">儲存設定</button>
+      <button id="resetUuidBtn" class="secondary">恢復預設</button>
+    </div>
+    <p class="note">顯示備註不會修改 ESP32 真正的廣播名稱。</p>
+  </div>
+
+  <div class="card">
+    <h2>繼電器名稱</h2>
+    <div id="nameEditors"></div>
+    <div class="row">
+      <button id="saveNamesBtn" class="primary">儲存名稱</button>
+      <button id="resetNamesBtn" class="secondary">恢復預設名稱</button>
+    </div>
+  </div>
+</section>
+
+<footer>Ec電驅 · 請先在安全、無負載環境測試</footer>
+</main>
+
+<script>
+'use strict';
+
+const DEFAULT_SERVICE = '12345678-1234-5678-1234-56789abcdef0';
+const DEFAULT_CHAR = '12345678-1234-5678-1234-56789abcdef1';
+const DEFAULT_NAMES = ['繼電器 1','繼電器 2','繼電器 3','繼電器 4'];
+
+const KEY_NAMES = 'ecdrive_names_v1';
+const KEY_GROUPS = 'ecdrive_groups_v1';
+const KEY_BLE = 'ecdrive_ble_v1';
+
+function loadJSON(key, fallback) {
   try {
-    service = bmsClient->getService(BMS_SERVICE_UUID);
-  } catch (...) {
-    service = nullptr;
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
+  } catch {
+    return fallback;
   }
-
-  if (service == nullptr) {
-    Serial.println("找不到 FFE0 服務");
-    bmsClient->disconnect();
-    return false;
-  }
-
-  try {
-    bmsCharacteristic =
-      service->getCharacteristic(BMS_CHAR_UUID);
-  } catch (...) {
-    bmsCharacteristic = nullptr;
-  }
-
-  if (bmsCharacteristic == nullptr) {
-    Serial.println("找不到 FFE1 特徵值");
-    bmsClient->disconnect();
-    return false;
-  }
-
-  if (bmsCharacteristic->canNotify()) {
-    bmsCharacteristic->registerForNotify(onBmsNotify);
-    Serial.println("已註冊 BMS Notify");
-  } else {
-    Serial.println("BMS 不支援 Notify，嘗試 Read");
-  }
-
-  bmsConnected = true;
-
-  batteryJson =
-    "{\"valid\":false,\"status\":\"BMS 已連線，等待資料\",\"voltage\":0,\"socRaw\":0,\"currentRaw\":0}";
-
-  Serial.println("BMS 已連線");
-  return true;
 }
 
-// ===== 搜尋 BMS =====
-void scanBms() {
-  Serial.println("搜尋 ANT BMS...");
+let relayNames = loadJSON(KEY_NAMES, DEFAULT_NAMES.slice());
+let groups = loadJSON(KEY_GROUPS, []);
+let bleConfig = loadJSON(KEY_BLE, {
+  serviceUuid: DEFAULT_SERVICE,
+  characteristicUuid: DEFAULT_CHAR,
+  deviceAlias: ''
+});
 
-  BLEScan *scan = BLEDevice::getScan();
-  scan->setAdvertisedDeviceCallbacks(new ScanCallbacks(), true);
-  scan->setActiveScan(true);
-  scan->setInterval(100);
-  scan->setWindow(80);
-  scan->start(5, false);
+let device = null;
+let gattServer = null;
+let controlChar = null;
+let relayStates = [false,false,false,false];
+let batchBusy = false;
 
-  lastScan = millis();
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  })[ch]);
 }
 
-// ===== 初始化 =====
-void setup() {
-  Serial.begin(115200);
-  delay(500);
+function setStatus(message) {
+  $('connectionStatus').textContent = message;
+}
 
-  for (uint8_t i = 0; i < 4; i++) {
-    pinMode(RELAY_PINS[i], OUTPUT);
+function setConnected(connected) {
+  $('connectBtn').disabled = connected;
+  $('disconnectBtn').disabled = !connected;
+  $('allOnBtn').disabled = !connected;
+  $('allOffBtn').disabled = !connected;
+  $('readBtn').disabled = !connected;
+  renderRelays();
+  renderGroups();
+}
 
-    digitalWrite(
-      RELAY_PINS[i],
-      RELAY_ACTIVE_LOW ? HIGH : LOW
+function validUUID(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+function renderRelays() {
+  $('relayList').innerHTML = relayNames.map((name,index) => `
+    <div class="relay">
+      <div><b>${escapeHTML(name)}</b><br><small>R${index+1}</small></div>
+      <span class="pill ${relayStates[index]?'on':''}">
+        ${relayStates[index]?'已開啟':'已關閉'}
+      </span>
+      <button class="small" data-relay="${index}" ${!controlChar?'disabled':''}>
+        ${relayStates[index]?'關閉':'開啟'}
+      </button>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('[data-relay]').forEach(button => {
+    button.onclick = () => sendRelay(
+      Number(button.dataset.relay),
+      !relayStates[Number(button.dataset.relay)]
     );
-  }
-
-  BLEDevice::init(DEVICE_NAME);
-
-  BLEServer *server = BLEDevice::createServer();
-  server->setCallbacks(new ServerCallbacks());
-
-  BLEService *service = server->createService(SERVICE_UUID);
-
-  relayCharacteristic = service->createCharacteristic(
-    RELAY_UUID,
-    BLECharacteristic::PROPERTY_WRITE |
-    BLECharacteristic::PROPERTY_WRITE_NR
-  );
-
-  relayCharacteristic->setCallbacks(new RelayCallbacks());
-
-  batteryCharacteristic = service->createCharacteristic(
-    BATTERY_UUID,
-    BLECharacteristic::PROPERTY_READ |
-    BLECharacteristic::PROPERTY_NOTIFY
-  );
-
-  batteryCharacteristic->addDescriptor(new BLE2902());
-  batteryCharacteristic->setValue(batteryJson.c_str());
-
-  service->start();
-
-  BLEAdvertising *advertising = BLEDevice::getAdvertising();
-  advertising->addServiceUUID(SERVICE_UUID);
-  advertising->setScanResponse(true);
-
-  BLEDevice::startAdvertising();
-
-  Serial.println("Ec電驅已啟動");
-  Serial.println("裝置名稱：ESP32-S3-Car");
-  Serial.println("四路繼電器：GPIO 4、5、6、7");
-
-  scanBms();
+  });
 }
 
-// ===== 主程式 =====
-void loop() {
-  unsigned long now = millis();
+function renderChecks() {
+  $('groupChecks').innerHTML = relayNames.map((name,index) => `
+    <label class="checkitem">
+      <input type="checkbox" value="${index}">
+      <span>${escapeHTML(name)}</span>
+    </label>
+  `).join('');
+}
 
-  if (bmsFound && !bmsConnected) {
-    bmsFound = false;
+function renderNameEditors() {
+  $('nameEditors').innerHTML = relayNames.map((name,index) => `
+    <label class="note" for="relayName${index}">R${index+1}</label>
+    <input class="field nameEditor" id="relayName${index}"
+      maxlength="24" value="${escapeHTML(name)}">
+  `).join('');
+}
 
-    if (!connectBms()) {
-      Serial.println("BMS 連線失敗，稍後重新搜尋");
-      lastScan = now;
+function renderGroups() {
+  if (!groups.length) {
+    $('groupList').innerHTML = '<p class="note">尚未建立控制組合。</p>';
+    return;
+  }
+
+  $('groupList').innerHTML = groups.map((group,index) => `
+    <div class="group">
+      <div class="grouphead">
+        <b>${escapeHTML(group.name)}</b>
+        <button class="secondary small" data-delete-group="${index}">刪除</button>
+      </div>
+      <div class="note" style="margin-top:8px">
+        ${group.relays.map(i=>escapeHTML(relayNames[i])).join('、')}
+      </div>
+      <div class="groupactions">
+        <button class="green" data-open-group="${index}" ${!controlChar?'disabled':''}>開啟所選</button>
+        <button class="red" data-close-group="${index}" ${!controlChar?'disabled':''}>關閉所選</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('[data-delete-group]').forEach(button => {
+    button.onclick = () => {
+      groups.splice(Number(button.dataset.deleteGroup),1);
+      localStorage.setItem(KEY_GROUPS,JSON.stringify(groups));
+      renderGroups();
+    };
+  });
+
+  document.querySelectorAll('[data-open-group]').forEach(button => {
+    button.onclick = () => runGroup(groups[Number(button.dataset.openGroup)],true);
+  });
+
+  document.querySelectorAll('[data-close-group]').forEach(button => {
+    button.onclick = () => runGroup(groups[Number(button.dataset.closeGroup)],false);
+  });
+}
+
+async function sendRelay(index,on) {
+  if (!controlChar) {
+    setStatus('請先連線藍牙。');
+    return false;
+  }
+
+  try {
+    const command = new TextEncoder().encode(`R${index+1}:${on?1:0}`);
+    if (controlChar.writeValueWithResponse) {
+      await controlChar.writeValueWithResponse(command);
+    } else {
+      await controlChar.writeValue(command);
     }
+
+    relayStates[index] = on;
+    renderRelays();
+    renderGroups();
+    setStatus(`已送出 R${index+1}:${on?1:0}`);
+    return true;
+  } catch (error) {
+    setStatus('指令傳送失敗：'+error.message);
+    return false;
+  }
+}
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve,ms));
+
+async function runBatch(indices,on) {
+  if (batchBusy) {
+    setStatus('上一組指令尚未完成，請稍候。');
+    return;
   }
 
-  if (bmsConnected &&
-      bmsClient != nullptr &&
-      !bmsClient->isConnected()) {
-
-    bmsConnected = false;
-    bmsCharacteristic = nullptr;
-
-    Serial.println("BMS 已中斷");
+  if (!controlChar) {
+    setStatus('請先連線藍牙。');
+    return;
   }
 
-  if (!bmsConnected &&
-      !bmsFound &&
-      now - lastScan >= 10000) {
-    scanBms();
+  batchBusy = true;
+  try {
+    for (const index of indices) {
+      const success = await sendRelay(index,on);
+      if (!success) break;
+      await sleep(120);
+    }
+  } finally {
+    batchBusy = false;
+  }
+}
+
+async function connectBLE() {
+  if (!navigator.bluetooth) {
+    setStatus('瀏覽器不支援 Web Bluetooth。請使用支援的 Android Chrome 與 HTTPS 網站。');
+    return;
   }
 
-  if (bmsConnected &&
-      bmsCharacteristic != nullptr &&
-      now - lastRead >= 3000) {
+  const serviceUUID = $('serviceUuid').value.trim();
+  const characteristicUUID = $('characteristicUuid').value.trim();
 
-    lastRead = now;
+  if (!validUUID(serviceUUID) || !validUUID(characteristicUUID)) {
+    setStatus('UUID 格式不正確，請檢查設定。');
+    return;
+  }
 
-    if (bmsCharacteristic->canRead()) {
+  try {
+    setStatus('請在藍牙選擇視窗中選擇 ESP32-S3 裝置。');
+
+    device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[serviceUUID]
+    });
+
+    device.addEventListener('gattserverdisconnected',onDisconnected);
+
+    gattServer = await device.gatt.connect();
+    const service = await gattServer.getPrimaryService(serviceUUID);
+    controlChar = await service.getCharacteristic(characteristicUUID);
+
+    setConnected(true);
+
+    const alias = $('deviceAlias').value.trim();
+    setStatus('已連線：'+(alias ? alias+' ('+(device.name||'未命名')+')' : device.name||'未命名裝置'));
+
+    await enableBatteryNotifications();
+
+    if (controlChar.properties.read) {
       try {
-        std::string value = bmsCharacteristic->readValue();
-
-        if (!value.empty()) {
-          parseBmsPacket(
-            (const uint8_t *)value.data(),
-            value.size()
-          );
-        }
-      } catch (...) {
-        Serial.println("BMS Read 失敗");
+        const value = await controlChar.readValue();
+        parseBatteryData(value);
+      } catch (error) {
+        console.log('初始讀取略過：',error.message);
       }
     }
+  } catch (error) {
+    controlChar = null;
+    gattServer = null;
+    setConnected(false);
+    setStatus('連線失敗：'+error.message);
   }
-
-  if (batteryCharacteristic != nullptr &&
-      now - lastNotify >= 1000) {
-
-    lastNotify = now;
-    batteryCharacteristic->setValue(batteryJson.c_str());
-
-    if (phoneConnected) {
-      batteryCharacteristic->notify();
-    }
-  }
-
-  delay(10);
 }
+
+function onDisconnected() {
+  controlChar = null;
+  gattServer = null;
+  setConnected(false);
+  $('notifyStatus').textContent = '藍牙已中斷。';
+  $('bmsStatus').textContent = 'ESP32-S3 連線已中斷。';
+  $('bmsPill').textContent = '未連線';
+  setStatus('藍牙已中斷，請重新連線。');
+}
+
+async function disconnectBLE() {
+  try {
+    if (controlChar) {
+      controlChar.removeEventListener('characteristicvaluechanged',onBmsNotify);
+    }
+    if (device && device.gatt.connected) device.gatt.disconnect();
+  } catch (error) {
+    console.log(error);
+  }
+
+  controlChar = null;
+  gattServer = null;
+  setConnected(false);
+  setStatus('已中斷連線。');
+}
+
+async function enableBatteryNotifications() {
+  if (!controlChar) return;
+
+  if (!controlChar.properties.notify) {
+    $('notifyStatus').textContent =
+      '此特徵值沒有宣告 Notify。韌體需要支援 PROPERTY_NOTIFY。';
+    return;
+  }
+
+  try {
+    controlChar.addEventListener('characteristicvaluechanged',onBmsNotify);
+    await controlChar.startNotifications();
+    $('notifyStatus').textContent = 'Notify 已啟用，等待電池資料。';
+  } catch (error) {
+    $('notifyStatus').textContent = '啟用通知失敗：'+error.message;
+  }
+}
+
+function onBmsNotify(event) {
+  parseBatteryData(event.target.value);
+}
+
+function parseBatteryData(dataView) {
+  const bytes = new Uint8Array(
+    dataView.buffer,
+    dataView.byteOffset,
+    dataView.byteLength
+  );
+
+  const message = new TextDecoder().decode(bytes).replace(/\0+$/,'').trim();
+
+  if (!message) return;
+
+  let data;
+  try {
+    data = JSON.parse(message);
+  } catch {
+    $('notifyStatus').textContent = '收到非 JSON 資料，未更新電池數值。';
+    return;
+  }
+
+  if (data.valid !== true) {
+    $('notifyStatus').textContent = String(data.status || 'BMS 資料尚未有效。');
+    return;
+  }
+
+  const voltage = Number(data.voltage);
+  const soc = Number(data.socRaw);
+  const currentRaw = Number(data.currentRaw);
+
+  if (!Number.isFinite(voltage) ||
+      !Number.isFinite(soc) ||
+      !Number.isFinite(currentRaw) ||
+      voltage <= 0 || voltage > 150 ||
+      soc < 0 || soc > 100) {
+    $('notifyStatus').textContent = '資料格式或數值不符合目前驗證範圍。';
+    return;
+  }
+
+  $('voltageValue').textContent = voltage.toFixed(2)+' V';
+  $('socValue').textContent = Math.round(soc)+' %';
+  $('socProgress').style.width = Math.max(0,Math.min(100,soc))+'%';
+  $('currentValue').textContent = String(currentRaw);
+  $('updateTime').textContent = new Date().toLocaleTimeString('zh-TW',{hour12:false});
+  $('bmsPill').textContent = '已收到資料';
+  $('bmsPill').className = 'pill on';
+  $('bmsStatus').textContent = '已收到 JSON 資料；電壓與 SOC 倍率仍需核對。';
+  $('notifyStatus').textContent = '資料解析成功。電流暫時顯示原始值，尚未換算安培。';
+}
+
+async function readBattery() {
+  if (!controlChar) return;
+
+  if (!controlChar.properties.read) {
+    $('notifyStatus').textContent = '特徵值不支援 Read，請等待 Notify。';
+    return;
+  }
+
+  try {
+    const value = await controlChar.readValue();
+    parseBatteryData(value);
+  } catch (error) {
+    $('notifyStatus').textContent = '讀取失敗：'+error.message;
+  }
+}
+
+$('connectBtn').onclick = connectBLE;
+$('disconnectBtn').onclick = disconnectBLE;
+$('allOnBtn').onclick = () => runBatch([0,1,2,3],true);
+$('allOffBtn').onclick = () => runBatch([0,1,2,3],false);
+$('readBtn').onclick = readBattery;
+
+$('saveGroupBtn').onclick = () => {
+  const name = $('groupName').value.trim();
+  const relays = [...document.querySelectorAll('#groupChecks input:checked')]
+    .map(input => Number(input.value));
+
+  if (!name) {
+    alert('請輸入組合名稱。');
+    return;
+  }
+  if (!relays.length) {
+    alert('請至少選擇一個繼電器。');
+    return;
+  }
+
+  groups.push({name,relays});
+  localStorage.setItem(KEY_GROUPS,JSON.stringify(groups));
+  $('groupName').value = '';
+  document.querySelectorAll('#groupChecks input').forEach(input => input.checked=false);
+  renderGroups();
+};
+
+$('clearChecksBtn').onclick = () => {
+  document.querySelectorAll('#groupChecks input').forEach(input => input.checked=false);
+};
+
+$('saveNamesBtn').onclick = () => {
+  relayNames = [...document.querySelectorAll('.nameEditor')]
+    .map((input,index) => input.value.trim() || `繼電器 ${index+1}`);
+
+  localStorage.setItem(KEY_NAMES,JSON.stringify(relayNames));
+  renderRelays();
+  renderChecks();
+  renderNameEditors();
+  renderGroups();
+  setStatus('繼電器名稱已儲存。');
+};
+
+$('resetNamesBtn').onclick = () => {
+  relayNames = DEFAULT_NAMES.slice();
+  localStorage.setItem(KEY_NAMES,JSON.stringify(relayNames));
+  renderRelays();
+  renderChecks();
+  renderNameEditors();
+  renderGroups();
+};
+
+$('saveBleBtn').onclick = () => {
+  const config = {
+    serviceUuid:$('serviceUuid').value.trim(),
+    characteristicUuid:$('characteristicUuid').value.trim(),
+    deviceAlias:$('deviceAlias').value.trim()
+  };
+
+  if (!validUUID(config.serviceUuid) || !validUUID(config.characteristicUuid)) {
+    alert('UUID 格式不正確。');
+    return;
+  }
+
+  bleConfig = config;
+  localStorage.setItem(KEY_BLE,JSON.stringify(bleConfig));
+  setStatus('藍牙設定已儲存。');
+};
+
+$('resetUuidBtn').onclick = () => {
+  $('serviceUuid').value = DEFAULT_SERVICE;
+  $('characteristicUuid').value = DEFAULT_CHAR;
+};
+
+$('clearBmsBtn').onclick = () => {
+  $('voltageValue').textContent = '-- V';
+  $('socValue').textContent = '-- %';
+  $('currentValue').textContent = '--';
+  $('updateTime').textContent = '尚無';
+  $('socProgress').style.width = '0%';
+  $('bmsPill').textContent = '等待資料';
+  $('bmsPill').className = 'pill';
+  $('bmsStatus').textContent = '等待 ESP32 傳送 BMS 資料。';
+  $('notifyStatus').textContent = '尚未收到 BMS 通知。';
+};
+
+document.querySelectorAll('[data-page]').forEach(button => {
+  button.addEventListener('click',() => {
+    document.querySelectorAll('.tab').forEach(tab =>
+      tab.classList.toggle('active',tab===button)
+    );
+    document.querySelectorAll('.page').forEach(page =>
+      page.hidden = page.id !== button.dataset.page
+    );
+  });
+});
+
+$('serviceUuid').value = bleConfig.serviceUuid || DEFAULT_SERVICE;
+$('characteristicUuid').value = bleConfig.characteristicUuid || DEFAULT_CHAR;
+$('deviceAlias').value = bleConfig.deviceAlias || '';
+
+renderRelays();
+renderChecks();
+renderNameEditors();
+renderGroups();
+</script>
+</body>
+</html>
